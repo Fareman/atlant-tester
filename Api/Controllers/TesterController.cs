@@ -7,21 +7,25 @@
     [ApiController]
     public class TesterController : Controller
     {
-        private readonly ITesterService _testService;
+        private readonly TesterService _testService;
 
-        public TesterController(ITesterService testService)
+        public TesterController(TesterService testService)
         {
             _testService = testService;
         }
-
+        /// <summary>
+        /// Example https://github.com/Fareman/TestTAP
+        /// </summary>
+        /// <param name="gitZipUrl">Ссылка на репозиторий с тестовым заданием.</param>
+        /// <returns></returns>
         [HttpPost]
-        public async Task TestApi(string gitZipUri)
+        public async Task TestApi(string gitZipUrl)
         {
-            if (gitZipUri.Length == 0)
+            if (gitZipUrl.Length == 0)
             {
-                Console.WriteLine(BadRequest(gitZipUri));
+                Console.WriteLine(BadRequest(gitZipUrl));
             }
-            await _testService.TestAsync(gitZipUri);
+            await _testService.TestAsync(gitZipUrl);
         }
     }
 }
