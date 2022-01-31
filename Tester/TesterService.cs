@@ -27,7 +27,7 @@
             int appProcessId = 0;
 
             var build = Directory.GetFiles(tempFolder, "*.csproj", SearchOption.AllDirectories).First();
-            var workingDirectory = Directory.GetDirectories(tempFolder,Path.GetDirectoryName("*.sln"), SearchOption.AllDirectories).First();
+            var workingDirectory = Directory.GetDirectories(tempFolder, Path.GetDirectoryName("*.sln"), SearchOption.AllDirectories).First();
             try
             {
                 var dotnetCommand = Cli.Wrap("dotnet")
@@ -48,11 +48,23 @@
             }
             finally
             {
-                Process dotnetProcess = Process.GetProcessById(dotnetProcessId);
-                dotnetProcess?.Kill(true);
-
-                Process appProcess = Process.GetProcessById(appProcessId);
-                appProcess?.Kill(true);
+                try
+                {
+                    var dotnetProcess = Process.GetProcessById(dotnetProcessId);
+                    dotnetProcess?.Kill(true);
+                }
+                catch { }
+                try
+                {
+                    var appProcess = Process.GetProcessById(appProcessId);
+                    appProcess?.Kill(true);
+                }
+                catch { }
+                try
+                {
+                    Directory.Delete(tempFolder, true);
+                }
+                catch { };
             }
         }
 

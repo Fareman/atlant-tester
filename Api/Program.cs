@@ -1,4 +1,5 @@
 using Microsoft.OpenApi.Models;
+using RestSharp;
 using System.Reflection;
 using Tester;
 
@@ -16,7 +17,9 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
 });
 
-builder.Services.AddSingleton<GitHubClient>();
+
+builder.Services.AddScoped<RestClient>();
+builder.Services.AddScoped<GitHubClient>();
 builder.Services.AddTransient<TesterService>();
 
 var app = builder.Build();

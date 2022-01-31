@@ -10,29 +10,22 @@
         /// <summary>
         /// Конструктор для создания клиента.
         /// </summary>
-        public GitHubClient()
+        public GitHubClient(RestClient client)
         {
-            _client = new RestClient("https://api.github.com/")
-                .AddDefaultHeader(KnownHeaders.Accept, "application/vnd.github.v3+json");
+            _client = client.AddDefaultHeader(KnownHeaders.Accept, "application/vnd.github.v3+json");
         }
 
-        public async Task<string> DownloadRepoAsync(string gitZipUri)
+        public async Task<string> DownloadRepoAsync(string gitZipUrl)
         {
-            var tempFolder = Path.Combine(Path.GetTempPath(),$"Repo_{Guid.NewGuid()}");
-            try
-            {
-                int uriIndex = gitZipUri.IndexOf('m');
-                gitZipUri = gitZipUri.Remove(0, uriIndex + 1);
-                gitZipUri = "https://api.github.com/repos" + gitZipUri + "/zipball";
+            var tempFolder = Path.Combine(Path.GetTempPath(), $"Repo_{Guid.NewGuid()}");
+            var zipFolder = $"{tempFolder}repo.zip";
+            int uriIndex = gitZipUrl.IndexOf('m');
+            gitZipUrl = gitZipUrl.Remove(0, uriIndex + 1);
+            gitZipUrl = $"https://api.github.com/repos{gitZipUrl}/zipball";
 
-                var repoBytes = await _client.DownloadDataAsync(new RestRequest(gitZipUri, Method.Get));
-                await File.WriteAllBytesAsync(tempFolder + "repo.zip", repoBytes);
-                ZipFile.ExtractToDirectory(tempFolder + "repo.zip", tempFolder);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            var repoBytes = await _client.DownloadDataAsync(new RestRequest(gitZipUrl, Method.Get));
+            await File.WriteAllBytesAsync(zipFolder, repoBytes);
+            ZipFile.ExtractToDirectory(zipFolder, tempFolder);
             return tempFolder;
         }
     }
