@@ -16,16 +16,17 @@
         /// <summary>
         /// Example https://github.com/Fareman/TestTAP
         /// </summary>
-        /// <param name="gitZipUrl">Ссылка на репозиторий с тестовым заданием.</param>
+        /// <param name="gitUrl">Ссылка на репозиторий с тестовым заданием.</param>
         /// <returns></returns>
         [HttpPost]
-        public async Task TestApi(string gitZipUrl)
+        public async Task<ActionResult> TestApi(string gitUrl)
         {
-            if (gitZipUrl.Length == 0)
+            if (!gitUrl.Contains("https://github.com/"))
             {
-                Console.WriteLine(BadRequest(gitZipUrl));
+                return BadRequest("Invalid repository link");
             }
-            await _testService.TestAsync(gitZipUrl);
+            await _testService.TestAsync(gitUrl);
+            return Ok();
         }
     }
 }

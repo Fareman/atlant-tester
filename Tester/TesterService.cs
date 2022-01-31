@@ -12,9 +12,9 @@
             _client = client;
         }
 
-        public async Task TestAsync(string gitZipUri)
+        public async Task TestAsync(string gitUri)
         {
-            var tempFolder = await _client.DownloadRepoAsync(gitZipUri);
+            var tempFolder = await _client.DownloadRepoAsync(gitUri);
             await CreateBuildAsync(tempFolder);
             await ExecTestsAsync();
             await ExecResharperAsync();

@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGen(c =>
 
 builder.Services.AddScoped<RestClient>();
 builder.Services.AddScoped<GitHubClient>();
-builder.Services.AddTransient<TesterService>();
+builder.Services.AddScoped<TesterService>();
 
 var app = builder.Build();
 
