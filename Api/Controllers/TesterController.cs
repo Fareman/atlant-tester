@@ -1,32 +1,31 @@
-﻿namespace Api.Controllers
+﻿namespace Api.Controllers;
+
+using Microsoft.AspNetCore.Mvc;
+
+using Tester;
+
+[Route("api/v1")]
+[ApiController]
+public class TesterController : Controller
 {
-    using Microsoft.AspNetCore.Mvc;
-    using Tester;
+    private readonly TesterService _testService;
 
-    [Route("api/v1")]
-    [ApiController]
-    public class TesterController : Controller
+    public TesterController(TesterService testService)
     {
-        private readonly TesterService _testService;
+        _testService = testService;
+    }
 
-        public TesterController(TesterService testService)
-        {
-            _testService = testService;
-        }
-        /// <summary>
-        /// Example https://github.com/Fareman/TestTAP
-        /// </summary>
-        /// <param name="gitUrl">Ссылка на репозиторий с тестовым заданием.</param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<ActionResult> TestApi(string gitUrl)
-        {
-            if (!gitUrl.Contains("https://github.com/"))
-            {
-                return BadRequest("Invalid repository link");
-            }
-            await _testService.TestAsync(gitUrl);
-            return Ok();
-        }
+    /// <summary>
+    ///     Example https://github.com/Fareman/TestTAP
+    /// </summary>
+    /// <param name="gitUrl">Ссылка на репозиторий с тестовым заданием.</param>
+    /// <returns></returns>
+    [HttpPost]
+    public async Task<ActionResult> TestApi(string gitUrl)
+    {
+        if (!gitUrl.Contains("https://github.com/"))
+            return BadRequest("Invalid repository link");
+        await _testService.TestAsync(gitUrl);
+        return Ok();
     }
 }
