@@ -3,6 +3,16 @@ version: '3.4'
 services:
   api:
     image: ${DOCKER_REGISTRY-}api
+    ports:
+      - "5079:5079"
     build:
       context: .
       dockerfile: Api/Dockerfile
+  postman_checks:
+    image: postman/newman
+    command:
+        run https://www.getpostman.com/collections/1c53a8e4db4b97e734ca
+        --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
+    volumes:
+        - ./postman:/etc/newman
+        
