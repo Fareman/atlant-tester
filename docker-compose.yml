@@ -15,4 +15,3 @@ services:
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
     volumes:
         - ./postman:/etc/newman
-        
