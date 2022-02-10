@@ -58,7 +58,34 @@ public class TesterService
             catch
             {
             }
+        }
+    }
 
+    public async Task ExecTestsAsync(string tempFolder)
+    {
+        var dockerProcessId = 0;
+        var compose = Directory.GetFiles(Directory.GetCurrentDirectory(),"docker-compose.yml",SearchOption.AllDirectories).First();
+        var composeFile = Directory.GetFiles(tempFolder,"docker-compose.yml",SearchOption.AllDirectories).First(); 
+        try
+        {
+            var dockerCommand = Cli.Wrap("docker-compose")
+                                   .WithArguments($"-f {compose} -f {composeFile} up")
+                                   .WithWorkingDirectory(tempFolder)
+                                   .ExecuteAsync();
+
+            dockerProcessId = dockerCommand.ProcessId;
+            await dockerCommand;
+        }
+        finally
+        {
+            try
+            {
+                var dockerProcess = Process.GetProcessById(dockerProcessId);
+                dockerProcess?.Kill(true);
+            }
+            catch
+            {
+            }
             try
             {
                 Directory.Delete(tempFolder, true);
@@ -74,11 +101,6 @@ public class TesterService
         throw new NotSupportedException();
     }
 
-    public async Task ExecTestsAsync()
-    {
-        throw new NotSupportedException();
-    }
-
     public async Task MakeReportAsync()
     {
         throw new NotSupportedException();
@@ -87,8 +109,7 @@ public class TesterService
     public async Task TestAsync(string gitUri)
     {
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
-        await CreateBuildAsync(tempFolder);
-        await ExecTestsAsync();
+        await ExecTestsAsync(tempFolder);
         await ExecResharperAsync();
         await MakeReportAsync();
     }
