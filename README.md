@@ -4,13 +4,13 @@
 
 <h2>Пример команд для для оценки стиля кода или автоматического форматирования</h2>
 
-Инспекция кода без изменений с генерацией отчета
+Инспекция кода без изменений с генерацией отчета:
 
 ~~~powershell
 jb inspectcode ./Api.sln --output=REPORT.xml
 ~~~
 
-Форматирование кода в соответствии с соглашением форматирования кода
+Форматирование кода в соответствии с соглашением форматирования кода:
 
 ~~~powershell
 jb cleanupcode ./Api.sln --settings=./Api/codestyle.DotSettings
@@ -19,7 +19,7 @@ jb cleanupcode ./Api.sln --settings=./Api/codestyle.DotSettings
 см. [Инструкцию](https://www.jetbrains.com/help/resharper/ReSharper_Command_Line_Tools.html)
 
 <h2>Установка husky</h2>
-Для устаноки необходимо перейти в корневую папку проекта и ввести следующик команды:
+Для установки необходимо перейти в корневую папку проекта и ввести следующик команды:
 
 ~~~powershell
 cd Your project root directory
@@ -35,10 +35,10 @@ dotnet tool install Husky
 ~~~powershell
 dotnet husky install
 
-dotnet husky attach <Ваш .csproj файл>
+dotnet husky attach Your.csproj
 ~~~
 
-В появившемся файле root\.husky\task-runner.json добавляем команду в формате json:
+В появившемся файле **root\.husky\task-runner.json** добавляем команду в формате json:
 ```json
 {
    "name": "resharper",
@@ -59,7 +59,7 @@ dotnet husky add pre-push -c "resharper"
 <h2>Запуск проекта в docker с compose-файлом тестового задания</h2>
 
 ~~~powershell
-cd <i>Test project root directory</i>
+cd Test project root directory
 ~~~
 
 Образец docker-compose.yml:
