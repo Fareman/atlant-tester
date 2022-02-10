@@ -26,6 +26,7 @@ public class TesterService
             var dotnetCommand = Cli.Wrap("dotnet")
                                    .WithArguments("build")
                                    .WithWorkingDirectory(workingDirectory)
+                                   .WithValidation(CommandResultValidation.None)
                                    .ExecuteAsync();
 
             dotnetProcessId = dotnetCommand.ProcessId;
