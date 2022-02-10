@@ -26,6 +26,7 @@ public class TesterService
             var dotnetCommand = Cli.Wrap("dotnet")
                                    .WithArguments("build")
                                    .WithWorkingDirectory(workingDirectory)
+                                   .WithValidation(CommandResultValidation.None)
                                    .ExecuteAsync();
 
             dotnetProcessId = dotnetCommand.ProcessId;
@@ -76,7 +77,23 @@ public class TesterService
 
     public async Task ExecTestsAsync()
     {
-        throw new NotSupportedException();
+        var dockerProcessId = 0;
+        try
+        {
+            var dockerCommand = Cli.Wrap("docker-compose")
+                                   .WithArguments("up")
+                                   .WithWorkingDirectory(Directory.GetCurrentDirectory())
+                                   .WithValidation(CommandResultValidation.None)
+                                   .ExecuteAsync();
+
+            dockerProcessId = dockerCommand.ProcessId;
+            await dockerCommand;
+        }
+        finally
+        {
+            var dockerProcess = Process.GetProcessById(dockerProcessId);
+            dockerProcess?.Kill(true);
+        }
     }
 
     public async Task MakeReportAsync()

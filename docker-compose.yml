@@ -1,13 +1,13 @@
 version: '3.4'
 
 services:
-  api:
-    image: ${DOCKER_REGISTRY-}api
+  TestTask:
+    image: ${DOCKER_REGISTRY-}TestTask
     ports:
-      - "5079:5079"
+        - "8080:80"  
     build:
       context: .
-      dockerfile: Api/Dockerfile
+      dockerfile: TestTAP-master/TestTAPTestTAP/Dockerfile
   postman_checks:
     image: postman/newman
     command:
