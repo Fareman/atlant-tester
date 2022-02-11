@@ -1,7 +1,7 @@
 ﻿namespace Tester;
 
 using System.Diagnostics;
-
+using System.Text;
 using CliWrap;
 
 public class TesterService
@@ -67,40 +67,30 @@ public class TesterService
         throw new NotSupportedException();
     }
 
-    public async Task ExecTestsAsync(string tempFolder)
+    public async Task<string> ExecTestsAsync(string tempFolder)
     {
-        var dockerProcessId = 0;
-        var compose = Directory.GetFiles(Directory.GetCurrentDirectory(), "docker-compose.yml", SearchOption.AllDirectories)
+        var compose = Directory.GetFiles(@"C:\back\atlant-tester", "docker-compose.yml", SearchOption.AllDirectories)
                                .First();
         var composeFile = Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).First();
         try
         {
-            var dockerCommand = Cli.Wrap("docker-compose")
-                                   .WithArguments($"-f {compose} -f {composeFile} up")
-                                   .WithWorkingDirectory(tempFolder)
-                                   .ExecuteAsync();
+            var stdOutBuffer = new StringBuilder();
+            var stdErrBuffer = new StringBuilder();
 
-            dockerProcessId = dockerCommand.ProcessId;
+            var dockerCommand = Cli.Wrap("docker-compose")
+                                   .WithArguments($"-f {compose} -f {composeFile} up --abort-on-container-exit")
+                                   .WithWorkingDirectory(tempFolder)
+                                   .WithValidation(CommandResultValidation.None)
+                                   .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                                   .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                                   .ExecuteAsync();
             await dockerCommand;
+            
+            return dockerCommand.Task.Result.ExitCode != 0 ? stdOutBuffer.ToString() : stdErrBuffer.ToString();
         }
         finally
         {
-            try
-            {
-                var dockerProcess = Process.GetProcessById(dockerProcessId);
-                dockerProcess?.Kill(true);
-            }
-            catch
-            {
-            }
-
-            try
-            {
-                Directory.Delete(tempFolder, true);
-            }
-            catch
-            {
-            }
+            Directory.Delete(tempFolder, true);
         }
     }
 
@@ -109,11 +99,10 @@ public class TesterService
         throw new NotSupportedException();
     }
 
-    public async Task TestAsync(string gitUri)
+    public async Task<string> TestAsync(string gitUri)
     {
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
-        await ExecTestsAsync(tempFolder);
-        await ExecResharperAsync();
-        await MakeReportAsync();
+        var report = await ExecTestsAsync(tempFolder);
+        return report;
     }
 }

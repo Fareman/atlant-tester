@@ -10,9 +10,9 @@ services:
   postman_checks:
     image: postman/newman
     depends_on:
-      - testtap
+      - apitestingproject
     command:
-        run https://www.getpostman.com/collections/777348f8eb4d715d6b10
+        run https://www.getpostman.com/collections/fa64f6a750163eae464a
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
     volumes:
         - ./postman:/etc/newman
@@ -26,3 +26,5 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    depends_on:
+     - apitestingproject

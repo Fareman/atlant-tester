@@ -16,7 +16,7 @@ public class TesterController : Controller
     }
 
     /// <summary>
-    ///     Example https://github.com/Fareman/TestTAP
+    ///     Example https://github.com/Fareman/ApiTestingProject
     /// </summary>
     /// <param name="gitUrl">Ссылка на репозиторий с тестовым заданием.</param>
     /// <returns></returns>
@@ -25,7 +25,7 @@ public class TesterController : Controller
     {
         if (!gitUrl.Contains("https://github.com/"))
             return BadRequest("Invalid repository link");
-        await _testService.TestAsync(gitUrl);
-        return Ok();
+        var report = await _testService.TestAsync(gitUrl);
+        return Ok(report);
     }
 }
