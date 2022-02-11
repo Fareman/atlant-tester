@@ -62,11 +62,17 @@ public class TesterService
         }
     }
 
+    public async Task ExecResharperAsync()
+    {
+        throw new NotSupportedException();
+    }
+
     public async Task ExecTestsAsync(string tempFolder)
     {
         var dockerProcessId = 0;
-        var compose = Directory.GetFiles(Directory.GetCurrentDirectory(),"docker-compose.yml",SearchOption.AllDirectories).First();
-        var composeFile = Directory.GetFiles(tempFolder,"docker-compose.yml",SearchOption.AllDirectories).First(); 
+        var compose = Directory.GetFiles(Directory.GetCurrentDirectory(), "docker-compose.yml", SearchOption.AllDirectories)
+                               .First();
+        var composeFile = Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).First();
         try
         {
             var dockerCommand = Cli.Wrap("docker-compose")
@@ -87,6 +93,7 @@ public class TesterService
             catch
             {
             }
+
             try
             {
                 Directory.Delete(tempFolder, true);
@@ -95,11 +102,6 @@ public class TesterService
             {
             }
         }
-    }
-
-    public async Task ExecResharperAsync()
-    {
-        throw new NotSupportedException();
     }
 
     public async Task MakeReportAsync()
