@@ -21,7 +21,7 @@ dotnet new testtap
 
 5. Внедрение пакетов и изменение строки подключения в appsettings.json
 ~~~C#
-к//AppContext - ваш класс контекста бд
+//AppContext - ваш класс контекста бд
 builder.Services.AddDbContext<AppContext>(optionsBuilder =>
 {
     optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("PostgreDatabase"));
