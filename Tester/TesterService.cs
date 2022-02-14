@@ -2,6 +2,7 @@
 
 using System.Diagnostics;
 using System.Text;
+
 using CliWrap;
 
 public class TesterService
@@ -69,23 +70,25 @@ public class TesterService
 
     public async Task<string> ExecTestsAsync(string tempFolder)
     {
-        var compose = Directory.GetFiles(@"C:\back\atlant-tester", "docker-compose.yml", SearchOption.AllDirectories)
-                               .First();
-        var composeFile = Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).First();
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
+
         try
         {
             var stdOutBuffer = new StringBuilder();
             var stdErrBuffer = new StringBuilder();
 
+            var testProjectComposeFile = GetDockerComposeFile(path);
+            var testerProjectComposeFile = GetDockerComposeFile(tempFolder);
+
             var dockerCommand = Cli.Wrap("docker-compose")
-                                   .WithArguments($"-f {compose} -f {composeFile} up --abort-on-container-exit")
+                                   .WithArguments($"-f {testProjectComposeFile} -f {testerProjectComposeFile} up --abort-on-container-exit")
                                    .WithWorkingDirectory(tempFolder)
                                    .WithValidation(CommandResultValidation.None)
                                    .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                                    .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
                                    .ExecuteAsync();
             await dockerCommand;
-            
+
             return dockerCommand.Task.Result.ExitCode != 0 ? stdOutBuffer.ToString() : stdErrBuffer.ToString();
         }
         finally
@@ -104,5 +107,11 @@ public class TesterService
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
         var report = await ExecTestsAsync(tempFolder);
         return report;
+    }
+    
+    private static string GetDockerComposeFile(string baseDirectory)
+    {
+        var path = Directory.GetFiles(baseDirectory, "docker-compose.yml", SearchOption.AllDirectories).First();
+        return path;
     }
 }

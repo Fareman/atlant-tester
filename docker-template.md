@@ -1,17 +1,28 @@
-<h1>Инструкция по внедрению docker в проект</h2>
+<h1>Инструкция по внедрению docker в проект</h1>
 
 Требования к проекту:
-<ol>
-  <li>Проект тестового задания создается на основе выданного шаблона. Его необходимо поместить в директорию %USERPROFILE%\Documents\Visual Studio <Версия вашей студии>\Templates\ProjectTemplates</li>
-  <li>При создании проекта из шаблона задате имя TestTAP и не ставьте галочку на опции "Поместить проект и решение в одной директории"</li>
-  <li>Убедитесь, что файл решения (.sln) лежит в корне проекта, файл сборки (.csproj) лежит ./TestTAP/TestTAP.csproj</li>
-  <li>Убедитесь, что файлы .dockerignore, docker-compose.dcproj, docker-compose.override.yml, dockerfile и docker-compose.yml лежат в корневой папке вместе с файлом TestTAP.sln</li>
-  <li>В проект добавить пакеты "Npgsql.EntityFrameworkCore.PostgreSQL" и "Npgsql.EntityFrameworkCore.PostgreSQL.Design"</li>
-</ol>
 
-6. Внедрение пакетов и изменение строки подключения в appsettings.json
+1. Проект тестового задания создается на основе выданного шаблона. Шаблон  необходимо поместить в директорию **%USERPROFILE%\Documents\Visual Studio <Версия вашей студии>\Templates\ProjectTemplates**
+
+2. В папке, в которую вы поместили шаблон, откройте PowerShell и введите команду. Убедитесь, что в списке присутствует шаблон с названием "TAP back-end test task template"
+~~~
+dotnet new -i ./ 
+dotnet new --list
+~~~
+
+3. Введите следующее в PowerShell заранее выбрав директорию, в которой хотите создать проект
+~~~
+mkdir TestTAP
+cd TestTAP
+dotnet new testtap
+~~~
+
+4. В проект добавить пакеты "Npgsql.EntityFrameworkCore.PostgreSQL" и "Npgsql.EntityFrameworkCore.PostgreSQL.Design"
+
+5. Внедрение пакетов и изменение строки подключения в appsettings.json
 ~~~C#
-builder.Services.AddDbContext<Ваш контекст>(optionsBuilder =>
+к//AppContext - ваш класс контекста бд
+builder.Services.AddDbContext<AppContext>(optionsBuilder =>
 {
     optionsBuilder.UseNpgsql(builder.Configuration.GetConnectionString("PostgreDatabase"));
 });
