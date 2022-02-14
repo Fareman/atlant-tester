@@ -1,17 +1,30 @@
 version: '3.4'
 
 services:
-  TestTask:
-    image: ${DOCKER_REGISTRY-}TestTask
-    ports:
-        - "8080:80"  
+  api:
+    image: ${DOCKER_REGISTRY-}api
     build:
       context: .
-      dockerfile: TestTAP-master/TestTAPTestTAP/Dockerfile
+      dockerfile: Api/Dockerfile
+
   postman_checks:
     image: postman/newman
+    depends_on:
+      - apitestingproject
     command:
-        run https://www.getpostman.com/collections/1c53a8e4db4b97e734ca
+        run https://www.getpostman.com/collections/fa64f6a750163eae464a
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
     volumes:
         - ./postman:/etc/newman
+
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    depends_on:
+     - apitestingproject

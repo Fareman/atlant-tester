@@ -1,6 +1,7 @@
 ﻿namespace Tester;
 
 using System.Diagnostics;
+using System.Text;
 
 using CliWrap;
 
@@ -59,14 +60,6 @@ public class TesterService
             catch
             {
             }
-
-            try
-            {
-                Directory.Delete(tempFolder, true);
-            }
-            catch
-            {
-            }
         }
     }
 
@@ -75,24 +68,32 @@ public class TesterService
         throw new NotSupportedException();
     }
 
-    public async Task ExecTestsAsync()
+    public async Task<string> ExecTestsAsync(string tempFolder)
     {
-        var dockerProcessId = 0;
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
+
         try
         {
-            var dockerCommand = Cli.Wrap("docker-compose")
-                                   .WithArguments("up")
-                                   .WithWorkingDirectory(Directory.GetCurrentDirectory())
-                                   .WithValidation(CommandResultValidation.None)
-                                   .ExecuteAsync();
+            var stdOutBuffer = new StringBuilder();
+            var stdErrBuffer = new StringBuilder();
 
-            dockerProcessId = dockerCommand.ProcessId;
+            var testProjectComposeFile = GetDockerComposeFile(path);
+            var testerProjectComposeFile = GetDockerComposeFile(tempFolder);
+
+            var dockerCommand = Cli.Wrap("docker-compose")
+                                   .WithArguments($"-f {testProjectComposeFile} -f {testerProjectComposeFile} up --abort-on-container-exit")
+                                   .WithWorkingDirectory(tempFolder)
+                                   .WithValidation(CommandResultValidation.None)
+                                   .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                                   .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                                   .ExecuteAsync();
             await dockerCommand;
+
+            return dockerCommand.Task.Result.ExitCode != 0 ? stdOutBuffer.ToString() : stdErrBuffer.ToString();
         }
         finally
         {
-            var dockerProcess = Process.GetProcessById(dockerProcessId);
-            dockerProcess?.Kill(true);
+            Directory.Delete(tempFolder, true);
         }
     }
 
@@ -101,12 +102,16 @@ public class TesterService
         throw new NotSupportedException();
     }
 
-    public async Task TestAsync(string gitUri)
+    public async Task<string> TestAsync(string gitUri)
     {
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
-        await CreateBuildAsync(tempFolder);
-        await ExecTestsAsync();
-        await ExecResharperAsync();
-        await MakeReportAsync();
+        var report = await ExecTestsAsync(tempFolder);
+        return report;
+    }
+    
+    private static string GetDockerComposeFile(string baseDirectory)
+    {
+        var path = Directory.GetFiles(baseDirectory, "docker-compose.yml", SearchOption.AllDirectories).First();
+        return path;
     }
 }
