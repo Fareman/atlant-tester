@@ -1,9 +1,8 @@
 ﻿namespace Tester;
 
+using CliWrap;
 using System.Diagnostics;
 using System.Text;
-
-using CliWrap;
 
 public class TesterService
 {
@@ -14,58 +13,53 @@ public class TesterService
         _client = client;
     }
 
-    public async Task CreateBuildAsync(string tempFolder)
+    public async Task<string> CreateBuildAsync(string tempFolder)
     {
         var dotnetProcessId = 0;
-        var appProcessId = 0;
-
-        var build = Directory.GetFiles(tempFolder, "*.csproj", SearchOption.AllDirectories).First();
         var workingDirectory = Directory.GetDirectories(tempFolder, Path.GetDirectoryName("*.sln"), SearchOption.AllDirectories)
                                         .First();
         try
         {
+            var stdErrBuffer = new StringBuilder();
+
             var dotnetCommand = Cli.Wrap("dotnet")
                                    .WithArguments("build")
                                    .WithWorkingDirectory(workingDirectory)
                                    .WithValidation(CommandResultValidation.None)
+                                   .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
                                    .ExecuteAsync();
 
             dotnetProcessId = dotnetCommand.ProcessId;
             await dotnetCommand;
-
-            var appCommand = Cli.Wrap("dotnet")
-                                .WithArguments($"run --project {build}")
-                                .WithValidation(CommandResultValidation.None)
-                                .ExecuteAsync();
-
-            appProcessId = appCommand.ProcessId;
-            await appCommand;
+            if (dotnetCommand.Task.Result.ExitCode != 0)
+                return stdErrBuffer.ToString();
+            else
+                return dotnetCommand.Task.Result.ExitCode.ToString();
         }
         finally
         {
             try
             {
                 var dotnetProcess = Process.GetProcessById(dotnetProcessId);
-                dotnetProcess?.Kill(true);
+                dotnetProcess?.Kill(true);           
             }
             catch
             {
             }
-
-            try
-            {
-                var appProcess = Process.GetProcessById(appProcessId);
-                appProcess?.Kill(true);
-            }
-            catch
-            {
-            }
+            Directory.Delete(tempFolder, true);
         }
     }
 
-    public async Task ExecResharperAsync()
+    public async Task<string> ExecResharperAsync(string tempFolder)
     {
-        throw new NotSupportedException();
+        var slnPath = Directory.GetFiles(tempFolder, "*.sln", SearchOption.AllDirectories).First();
+
+        var resharperCommand = Cli.Wrap("jb").WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
+            .WithWorkingDirectory(tempFolder)
+            .ExecuteAsync();
+        await resharperCommand;
+
+        return resharperCommand.Task.Result.ExitCode.ToString();
     }
 
     public async Task<string> ExecTestsAsync(string tempFolder)
@@ -74,22 +68,20 @@ public class TesterService
 
         try
         {
-            var stdOutBuffer = new StringBuilder();
             var stdErrBuffer = new StringBuilder();
 
             var testProjectComposeFile = GetDockerComposeFile(path);
-            var testerProjectComposeFile = GetDockerComposeFile(tempFolder);
+            var serviceProjectComposeFile = GetDockerComposeFile(tempFolder);
 
             var dockerCommand = Cli.Wrap("docker-compose")
-                                   .WithArguments($"-f {testProjectComposeFile} -f {testerProjectComposeFile} up --abort-on-container-exit")
+                                   .WithArguments($"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
                                    .WithWorkingDirectory(tempFolder)
                                    .WithValidation(CommandResultValidation.None)
-                                   .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                                    .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
                                    .ExecuteAsync();
             await dockerCommand;
 
-            return dockerCommand.Task.Result.ExitCode != 0 ? stdOutBuffer.ToString() : stdErrBuffer.ToString();
+            return dockerCommand.Task.Result.ExitCode.ToString();
         }
         finally
         {
@@ -97,7 +89,7 @@ public class TesterService
         }
     }
 
-    public async Task MakeReportAsync()
+    public async Task<string> MakeReportAsync(string postman, string resharper)
     {
         throw new NotSupportedException();
     }
@@ -105,8 +97,18 @@ public class TesterService
     public async Task<string> TestAsync(string gitUri)
     {
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
-        var report = await ExecTestsAsync(tempFolder);
-        return report;
+        var buildResult = await CreateBuildAsync(tempFolder);
+        if(buildResult == "0")
+        {
+            var resharperResult = await ExecResharperAsync(tempFolder);
+            var postmanResult = await ExecTestsAsync(tempFolder);
+            var report = await MakeReportAsync(postmanResult, resharperResult);
+            return report;
+        }
+        else
+        {
+            return buildResult;
+        }
     }
     
     private static string GetDockerComposeFile(string baseDirectory)

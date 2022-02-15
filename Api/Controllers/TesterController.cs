@@ -21,7 +21,7 @@ public class TesterController : Controller
     /// <param name="gitUrl">Ссылка на репозиторий с тестовым заданием.</param>
     /// <returns></returns>
     [HttpPost]
-    public async Task<ActionResult> TestApi(string gitUrl)
+    public async Task<IActionResult> TestApi(string gitUrl)
     {
         if (!gitUrl.Contains("https://github.com/"))
             return BadRequest("Invalid repository link");
