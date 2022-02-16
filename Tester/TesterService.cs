@@ -1,14 +1,15 @@
 ﻿namespace Tester;
 
-using CliWrap;
 using System.Diagnostics;
 using System.Text;
 
+using CliWrap;
+
 public class TesterService
 {
-    private readonly GitHubClient _client;
+    private readonly IGitHubClient _client;
 
-    public TesterService(GitHubClient client)
+    public TesterService(IGitHubClient client)
     {
         _client = client;
     }
@@ -20,33 +21,31 @@ public class TesterService
                                         .First();
         try
         {
-            var stdErrBuffer = new StringBuilder();
+            var stdOutBuffer = new StringBuilder();
 
             var dotnetCommand = Cli.Wrap("dotnet")
                                    .WithArguments("build")
                                    .WithWorkingDirectory(workingDirectory)
                                    .WithValidation(CommandResultValidation.None)
-                                   .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                                   .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                                    .ExecuteAsync();
 
             dotnetProcessId = dotnetCommand.ProcessId;
             await dotnetCommand;
-            if (dotnetCommand.Task.Result.ExitCode != 0)
-                return stdErrBuffer.ToString();
-            else
-                return dotnetCommand.Task.Result.ExitCode.ToString();
+            return stdOutBuffer.ToString();
         }
         finally
         {
             try
             {
                 var dotnetProcess = Process.GetProcessById(dotnetProcessId);
-                dotnetProcess?.Kill(true);           
+                dotnetProcess?.Kill(true);
             }
             catch
             {
             }
-            Directory.Delete(tempFolder, true);
+
+            //Directory.Delete(tempFolder, true);
         }
     }
 
@@ -54,9 +53,10 @@ public class TesterService
     {
         var slnPath = Directory.GetFiles(tempFolder, "*.sln", SearchOption.AllDirectories).First();
 
-        var resharperCommand = Cli.Wrap("jb").WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
-            .WithWorkingDirectory(tempFolder)
-            .ExecuteAsync();
+        var resharperCommand = Cli.Wrap("jb")
+                                  .WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
+                                  .WithWorkingDirectory(tempFolder)
+                                  .ExecuteAsync();
         await resharperCommand;
 
         return resharperCommand.Task.Result.ExitCode.ToString();
@@ -74,7 +74,8 @@ public class TesterService
             var serviceProjectComposeFile = GetDockerComposeFile(tempFolder);
 
             var dockerCommand = Cli.Wrap("docker-compose")
-                                   .WithArguments($"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
+                                   .WithArguments(
+                                       $"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
                                    .WithWorkingDirectory(tempFolder)
                                    .WithValidation(CommandResultValidation.None)
                                    .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
@@ -98,19 +99,17 @@ public class TesterService
     {
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
         var buildResult = await CreateBuildAsync(tempFolder);
-        if(buildResult == "0")
+        if (buildResult == "0")
         {
             var resharperResult = await ExecResharperAsync(tempFolder);
             var postmanResult = await ExecTestsAsync(tempFolder);
             var report = await MakeReportAsync(postmanResult, resharperResult);
             return report;
         }
-        else
-        {
-            return buildResult;
-        }
+
+        return buildResult;
     }
-    
+
     private static string GetDockerComposeFile(string baseDirectory)
     {
         var path = Directory.GetFiles(baseDirectory, "docker-compose.yml", SearchOption.AllDirectories).First();

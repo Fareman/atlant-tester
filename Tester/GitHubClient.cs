@@ -4,7 +4,7 @@ using System.IO.Compression;
 
 using RestSharp;
 
-public class GitHubClient
+public class GitHubClient : IGitHubClient
 {
     private readonly RestClient _client;
 
