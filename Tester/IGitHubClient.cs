@@ -1,8 +1,6 @@
-﻿
-namespace Tester
+﻿namespace Tester;
+
+public interface IGitHubClient
 {
-    public interface IGitHubClient
-    {
-        Task<string> DownloadRepoAsync(string gitUrl);
-    }
+    Task<string> DownloadRepoAsync(string gitUrl);
 }
