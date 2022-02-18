@@ -1,9 +1,10 @@
-﻿namespace Tester
+﻿namespace Tester;
+
+public enum StatusCode
 {
-    public enum StatusCode
-    {
-        Ok, 
-        Error, 
-        Exception
-    }
+    Ok,
+
+    Error,
+
+    Exception
 }

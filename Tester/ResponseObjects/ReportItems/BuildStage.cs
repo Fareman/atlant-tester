@@ -1,9 +1,8 @@
-﻿namespace Tester.ResponseObjects.ReportItems
-{
-    public class BuildStage
-    {
-        public string Description { get; set; }
+﻿namespace Tester.ResponseObjects.ReportItems;
 
-        public StatusCode Result { get; set; }
-    }
+public record BuildStage
+{
+    public string Description { get; init; } = null!;
+
+    public StatusCode Result { get; set; }
 }

@@ -1,9 +1,8 @@
-﻿namespace Tester.ResponseObjects.ReportItems
-{
-    public class PostmanStage
-    {
-        public string Description { get; set; }
+﻿namespace Tester.ResponseObjects.ReportItems;
 
-        public StatusCode Result { get; set; }
-    }
+public record PostmanStage
+{
+    public string Description { get; init; } = null!;
+
+    public StatusCode Result { get; set; }
 }
