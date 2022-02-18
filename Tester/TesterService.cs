@@ -1,7 +1,10 @@
 ﻿namespace Tester;
-using CliWrap;
+
 using System.Text;
 using System.Xml;
+
+using CliWrap;
+
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
@@ -23,17 +26,16 @@ public class TesterService
         var stdOutBuffer = new StringBuilder();
 
         var dotnetCommand = await Cli.Wrap("dotnet")
-                               .WithArguments($"build {slnPath}")
-                               .WithWorkingDirectory(workingDirectory)
-                               .WithValidation(CommandResultValidation.None)
-                               .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-                               .ExecuteAsync();
+                                     .WithArguments($"build {slnPath}")
+                                     .WithWorkingDirectory(workingDirectory)
+                                     .WithValidation(CommandResultValidation.None)
+                                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                                     .ExecuteAsync();
 
         if (dotnetCommand.ExitCode == 0)
 
-            return new BuildStage { Result = StatusCode.Ok, Description = string.Empty };
-        else
-            return new BuildStage { Result = StatusCode.Error, Description = stdOutBuffer.ToString() };
+            return new BuildStage {Result = StatusCode.Ok, Description = string.Empty};
+        return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
     }
 
     public async Task<ResharperStage> ExecResharperAsync(string tempFolder)
@@ -41,63 +43,62 @@ public class TesterService
         var slnPath = GetFileDirectory(tempFolder, "*.sln");
         var stdOutBuffer = new StringBuilder();
 
-        await Cli.Wrap("jb").WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
-            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-            .WithWorkingDirectory(tempFolder)
-            .ExecuteAsync();
+        await Cli.Wrap("jb")
+                 .WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
+                 .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                 .WithWorkingDirectory(tempFolder)
+                 .ExecuteAsync();
 
         var xmlPath = GetFileDirectory(tempFolder, "REPORT.xml");
-        XmlDocument xmlDocument = new XmlDocument();
+        var xmlDocument = new XmlDocument();
         xmlDocument.LoadXml(xmlPath);
-             
-        XmlElement element = xmlDocument.DocumentElement;
+
+        var element = xmlDocument.DocumentElement;
         var output = string.Empty;
         foreach (XmlNode xnode in element)
         {
             if (xnode.Attributes.Count > 0)
-                output= xnode.Value;
-            foreach(XmlNode ynode in xnode.ChildNodes)
+                output = xnode.Value;
+            foreach (XmlNode ynode in xnode.ChildNodes)
             {
-                output= ynode.Value;
+                output = ynode.Value;
             }
         }
 
-        return new ResharperStage { Result = StatusCode.Ok, Description = xmlDocument.Value };
+        return new ResharperStage {Result = StatusCode.Ok, Description = xmlDocument.Value};
     }
 
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
     {
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
-        try
-        {
-            var stdOutBuffer = new StringBuilder();
-            var stdErrBuffer = new StringBuilder();
+        var stdOutBuffer = new StringBuilder();
+        var stdErrBuffer = new StringBuilder();
 
-            var testProjectComposeFile = GetFileDirectory(path, "docker-compose.yml");
-            var serviceProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
+        var testProjectComposeFile = GetFileDirectory(path, "docker-compose.yml");
+        var serviceProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
 
-            var dockerCommand = Cli.Wrap("docker-compose")
-                                   .WithArguments(
-                                       $"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
-                                   .WithWorkingDirectory(tempFolder)
-                                   .WithValidation(CommandResultValidation.None)
-                                   .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-                                   .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
-                                   .ExecuteAsync();
-            await dockerCommand;
+        var dockerCommand = Cli.Wrap("docker-compose")
+                               .WithArguments(
+                                   $"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
+                               .WithWorkingDirectory(tempFolder)
+                               .WithValidation(CommandResultValidation.None)
+                               .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                               .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                               .ExecuteAsync();
+        await dockerCommand;
 
-            return new PostmanStage { Result = StatusCode.Ok, Description = stdOutBuffer.ToString()};
-        }
-        finally
-        {
-            //Directory.Delete(tempFolder, true);
-        }
+        return new PostmanStage {Result = StatusCode.Ok, Description = stdOutBuffer.ToString()};
     }
 
     public static Report MakeReportAsync(BuildStage buildReport, ResharperStage resharperReport, PostmanStage postamanReport)
     {
-        return new Report { BuildStage = buildReport, ResharperStage = resharperReport, ContainerStage = new ContainerStage { Result = StatusCode.Ok, Description = string.Empty}, PostmanStage = postamanReport };
+        return new Report
+        {
+            BuildStage = buildReport, ResharperStage = resharperReport,
+            ContainerStage = new ContainerStage {Result = StatusCode.Ok, Description = string.Empty},
+            PostmanStage = postamanReport
+        };
     }
 
     public async Task<Report> TestAsync(string gitUri)
@@ -112,7 +113,7 @@ public class TesterService
             return report;
         }
 
-        return new Report { BuildStage = buildReport };
+        return new Report {BuildStage = buildReport};
     }
 
     private static string GetFileDirectory(string baseDirectory, string file)

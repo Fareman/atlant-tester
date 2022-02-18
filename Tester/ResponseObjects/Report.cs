@@ -9,5 +9,6 @@ public record Report
     public ContainerStage ContainerStage { get; init; } = null!;
 
     public PostmanStage PostmanStage { get; init; } = null!;
+
     public ResharperStage ResharperStage { get; init; } = null!;
 }
