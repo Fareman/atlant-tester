@@ -1,9 +1,10 @@
 ﻿namespace Tester;
 
-using CliWrap;
-using CSharpFunctionalExtensions;
 using System.Text;
 using System.Xml.Linq;
+
+using CliWrap;
+
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
@@ -32,8 +33,8 @@ public class TesterService
                                      .ExecuteAsync();
 
         if (dotnetCommand.ExitCode == 0)
-            return new BuildStage { Result = StatusCode.Ok, Description = "Successful build" };
-        return new BuildStage { Result = StatusCode.Error, Description = stdOutBuffer.ToString() };
+            return new BuildStage {Result = StatusCode.Ok, Description = "Successful build"};
+        return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
     }
 
     public async Task<ResharperStage> ExecResharperAsync(string tempFolder)
@@ -57,28 +58,30 @@ public class TesterService
     {
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
-        var stdOutBuffer = new StringBuilder();
         var stdErrBuffer = new StringBuilder();
 
         var testProjectComposeFile = GetFileDirectory(path, "docker-compose.yml");
         var serviceProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
 
-        var docekrCommand = await Cli.Wrap("docker-compose").WithArguments($"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
-            .WithWorkingDirectory(tempFolder)
-            .WithValidation(CommandResultValidation.None)
-            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-            .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
-            .ExecuteAsync();
+        var dockerCommand = await Cli.Wrap("docker-compose")
+                                     .WithArguments(
+                                         $"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
+                                     .WithWorkingDirectory(tempFolder)
+                                     .WithValidation(CommandResultValidation.None)
+                                     .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                                     .ExecuteAsync();
 
-        var postmanReport = GetFileDirectory(path, "newman-report.xml");
-        var xmlDocument = XDocument.Load($"{postmanReport}");
-
-        if (docekrCommand.ExitCode != 0)
-            return new PostmanStage { Result = StatusCode.Error, Description = stdErrBuffer.ToString()};
-        return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
+        if (dockerCommand.ExitCode == 0)
+        {
+            var postmanReport = GetFileDirectory(path, "newman-report.xml");
+            var xmlDocument = XDocument.Load($"{postmanReport}");
+            return new PostmanStage { Result = StatusCode.Ok, Description = xmlDocument.ToString() };
+        }
+        else
+            return new PostmanStage { Result = StatusCode.Error, Description = stdErrBuffer.ToString() };
     }
 
-    public static Report MakeReportAsync(BuildStage buildReport, ResharperStage resharperReport, PostmanStage postamanReport)
+    public static Report MakeReport(BuildStage buildReport, ResharperStage resharperReport, PostmanStage postamanReport)
     {
         return new Report
         {
@@ -96,7 +99,7 @@ public class TesterService
         {
             var resharperReport = await ExecResharperAsync(tempFolder);
             var postamanReport = await ExecTestsAsync(tempFolder);
-            var report = MakeReportAsync(buildReport, resharperReport, postamanReport);
+            var report = MakeReport(buildReport, resharperReport, postamanReport);
             return report;
         }
 
