@@ -1,10 +1,9 @@
 ﻿namespace Tester;
 
-using System.Text;
-using System.Xml;
-
 using CliWrap;
-
+using CSharpFunctionalExtensions;
+using System.Text;
+using System.Xml.Linq;
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
@@ -33,9 +32,8 @@ public class TesterService
                                      .ExecuteAsync();
 
         if (dotnetCommand.ExitCode == 0)
-
-            return new BuildStage {Result = StatusCode.Ok, Description = string.Empty};
-        return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
+            return new BuildStage { Result = StatusCode.Ok, Description = "Successful build" };
+        return new BuildStage { Result = StatusCode.Error, Description = stdOutBuffer.ToString() };
     }
 
     public async Task<ResharperStage> ExecResharperAsync(string tempFolder)
@@ -50,22 +48,9 @@ public class TesterService
                  .ExecuteAsync();
 
         var xmlPath = GetFileDirectory(tempFolder, "REPORT.xml");
-        var xmlDocument = new XmlDocument();
-        xmlDocument.LoadXml(xmlPath);
+        var xmlDocument = XDocument.Load($"{xmlPath}");
 
-        var element = xmlDocument.DocumentElement;
-        var output = string.Empty;
-        foreach (XmlNode xnode in element)
-        {
-            if (xnode.Attributes.Count > 0)
-                output = xnode.Value;
-            foreach (XmlNode ynode in xnode.ChildNodes)
-            {
-                output = ynode.Value;
-            }
-        }
-
-        return new ResharperStage {Result = StatusCode.Ok, Description = xmlDocument.Value};
+        return new ResharperStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
     }
 
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
@@ -78,25 +63,27 @@ public class TesterService
         var testProjectComposeFile = GetFileDirectory(path, "docker-compose.yml");
         var serviceProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
 
-        var dockerCommand = Cli.Wrap("docker-compose")
-                               .WithArguments(
-                                   $"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
-                               .WithWorkingDirectory(tempFolder)
-                               .WithValidation(CommandResultValidation.None)
-                               .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-                               .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
-                               .ExecuteAsync();
-        await dockerCommand;
+        var docekrCommand = await Cli.Wrap("docker-compose").WithArguments($"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
+            .WithWorkingDirectory(tempFolder)
+            .WithValidation(CommandResultValidation.None)
+            .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+            .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+            .ExecuteAsync();
 
-        return new PostmanStage {Result = StatusCode.Ok, Description = stdOutBuffer.ToString()};
+        var postmanReport = GetFileDirectory(path, "newman-report.xml");
+        var xmlDocument = XDocument.Load($"{postmanReport}");
+
+        if (docekrCommand.ExitCode != 0)
+            return new PostmanStage { Result = StatusCode.Error, Description = stdErrBuffer.ToString()};
+        return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
     }
 
     public static Report MakeReportAsync(BuildStage buildReport, ResharperStage resharperReport, PostmanStage postamanReport)
     {
         return new Report
         {
-            BuildStage = buildReport, ResharperStage = resharperReport,
-            ContainerStage = new ContainerStage {Result = StatusCode.Ok, Description = string.Empty},
+            BuildStage = buildReport,
+            ResharperStage = resharperReport,
             PostmanStage = postamanReport
         };
     }

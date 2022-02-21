@@ -12,7 +12,7 @@ services:
     depends_on:
       - apitestingproject
     command:
-        run https://www.getpostman.com/collections/fa64f6a750163eae464a
+        run https://www.getpostman.com/collections/cd161b641966fa230e16
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
     volumes:
         - ./postman:/etc/newman

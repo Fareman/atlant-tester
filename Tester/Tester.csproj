@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CliWrap" Version="3.4.0" />
+    <PackageReference Include="CliWrap" Version="3.4.1" />
     <PackageReference Include="CSharpFunctionalExtensions" Version="2.28.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
-    <PackageReference Include="RestSharp" Version="107.1.2" />
+    <PackageReference Include="RestSharp" Version="107.3.0" />
   </ItemGroup>
 
 </Project>
