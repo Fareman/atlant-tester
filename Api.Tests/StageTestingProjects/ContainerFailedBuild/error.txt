@@ -1,0 +1,2 @@
+yaml.scanner.ScannerError: mapping values are not allowed here
+  in "C:\back\Api.Tests\StageTestingProjects\ContainerFailedBuild\docker-compose.yml", line 8, column 17

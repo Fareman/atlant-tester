@@ -1,0 +1,234 @@
+{
+	"info": {
+		"_postman_id": "c299a147-786d-49c3-b837-b3127cf5bade",
+		"name": "ApiCheckDocker",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "PostPerson",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": 0,\r\n  \"name\": \"TestUser01\",\r\n  \"displayName\": \"TestUser01\",\r\n  \"skills\": []\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://testtap/api/v1/person",
+					"protocol": "http",
+					"host": [
+						"testtap"
+					],
+					"path": [
+						"api",
+						"v1",
+						"person"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetPersons",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const response = pm.response.json();\r",
+							"const testPersonID = response.map(tool => tool.id)\r",
+							"const testNames = response.map(tool => tool.name)\r",
+							"for(var i = 0; i < testPersonID.length; i++){\r",
+							"    if(testNames[i] == \"TestUser01\")\r",
+							"    pm.environment.set(\"PERSON_ID\", testPersonID[i])\r",
+							"}\r",
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://testtap/api/v1/persons",
+					"protocol": "http",
+					"host": [
+						"testtap"
+					],
+					"path": [
+						"api",
+						"v1",
+						"persons"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "GetPersonId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.environment.get(\"PERSON_ID\");\r",
+							"\r",
+							"pm.test(\"Check request-response\", () => {\r",
+							"    pm.expect(pm.response.json()).to.eql({\r",
+							"            \"id\": pm.variables.get(\"PERSON_ID\"),\r",
+							"            \"name\": \"TestUser01\",\r",
+							"            \"displayName\": \"TestUser01\",\r",
+							"            \"skills\": []\r",
+							"        }\r",
+							"    );\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://testtap/api/v1/person/{{PERSON_ID}}",
+					"protocol": "http",
+					"host": [
+						"testtap"
+					],
+					"path": [
+						"api",
+						"v1",
+						"person",
+						"{{PERSON_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "PutPersonId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Check request-response\", () => {\r",
+							"    pm.expect(pm.response.json()).to.eql({\r",
+							"            \"id\": pm.variables.get(\"PERSON_ID\"),\r",
+							"            \"name\": \"ChangedString\",\r",
+							"            \"displayName\": \"ChangedString\",\r",
+							"            \"skills\": [\r",
+							"                {\r",
+							"                \"id\": 1,\r",
+							"                \"name\": \"ChangedString\",\r",
+							"                \"level\": 10,\r",
+							"                \"personId\": pm.variables.get(\"PERSON_ID\")\r",
+							"                }\r",
+							"            ]\r",
+							"        }\r",
+							"    );\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"id\": 4,\r\n  \"name\": \"ChangedString\",\r\n  \"displayName\": \"ChangedString\",\r\n  \"skills\": [\r\n    {\r\n      \"id\": 4,\r\n      \"name\": \"ChangedString\",\r\n      \"level\": 10,\r\n      \"personId\": 4\r\n    }\r\n  ]\r\n}"
+				},
+				"url": {
+					"raw": "http://testtap/api/v1/person/{{PERSON_ID}}",
+					"protocol": "http",
+					"host": [
+						"testtap"
+					],
+					"path": [
+						"api",
+						"v1",
+						"person",
+						"{{PERSON_ID}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "DeletePersonId",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://testtap/api/v1/person/{{PERSON_ID}}",
+					"protocol": "http",
+					"host": [
+						"testtap"
+					],
+					"path": [
+						"api",
+						"v1",
+						"person",
+						"{{PERSON_ID}}"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

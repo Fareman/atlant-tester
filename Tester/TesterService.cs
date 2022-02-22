@@ -56,29 +56,36 @@ public class TesterService
 
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
     {
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
-
         var stdErrBuffer = new StringBuilder();
 
-        var testProjectComposeFile = GetFileDirectory(path, "docker-compose.yml");
-        var serviceProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
+        var testProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
+        var serviceComposeFile = string.Empty;
+
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
+        var directories = Directory.GetFiles(path, "docker-compose.yml", SearchOption.AllDirectories);
+        var str = "atlant-tester";
+        foreach (string s in directories)
+        {
+            if (s.Contains(str))
+                serviceComposeFile = s;
+        }
 
         var dockerCommand = await Cli.Wrap("docker-compose")
                                      .WithArguments(
-                                         $"-f {testProjectComposeFile} -f {serviceProjectComposeFile} up --abort-on-container-exit")
+                                         $"-f {testProjectComposeFile} -f {serviceComposeFile} up --abort-on-container-exit")
                                      .WithWorkingDirectory(tempFolder)
                                      .WithValidation(CommandResultValidation.None)
                                      .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
                                      .ExecuteAsync();
-
+        
         if (dockerCommand.ExitCode == 0)
         {
             var postmanReport = GetFileDirectory(path, "newman-report.xml");
             var xmlDocument = XDocument.Load($"{postmanReport}");
-            return new PostmanStage { Result = StatusCode.Ok, Description = xmlDocument.ToString() };
+            return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
         }
-        else
-            return new PostmanStage { Result = StatusCode.Error, Description = stdErrBuffer.ToString() };
+
+        return new PostmanStage {Result = StatusCode.Error, Description = stdErrBuffer.ToString()};
     }
 
     public static Report MakeReport(BuildStage buildReport, ResharperStage resharperReport, PostmanStage postamanReport)
