@@ -8,13 +8,27 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerComposeProjectPath>..\docker-compose.dcproj</DockerComposeProjectPath>
   </PropertyGroup>
+
+  <ItemGroup>
+	  <Content Include="docker-compose.yml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Dockerfile">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="docker-compose.dcproj">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="docker-compose.override.yml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
-  <ItemGroup>
-    <AssetsSourceFiles Include="docker-compose.yml"/>
-  </ItemGroup>
+	
   <ItemGroup>
     <ProjectReference Include="..\Tester\Tester.csproj" />
   </ItemGroup>

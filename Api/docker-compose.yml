@@ -7,12 +7,12 @@ services:
     image: ${DOCKER_REGISTRY-}api
     build:
       context: .
-      dockerfile: Api/Dockerfile
+      dockerfile: ./Dockerfile
 
   postman_checks:
     image: postman/newman
-    # depends_on:
-    #  - apitestingproject
+    depends_on:
+     - apitestingproject
     command:
         run postman_collection.json
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
@@ -28,5 +28,5 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-    # depends_on:
-    #  - apitestingproject
+    depends_on:
+     - apitestingproject

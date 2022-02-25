@@ -26,6 +26,24 @@
   </ItemGroup>
 
   <ItemGroup>
+	  <Content Include="..\Api\docker-compose.yml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\Api\Dockerfile">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\Api\docker-compose.dcproj">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\Api\docker-compose.override.yml">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\Api\.dockerignore">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+  </ItemGroup>
+	
+  <ItemGroup>
     <PackageReference Include="Autofac" Version="6.3.0" />
     <PackageReference Include="Autofac.Extras.Moq" Version="6.1.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
@@ -39,7 +57,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\atlant-tester\Tester\Tester.csproj" />
+    <ProjectReference Include="..\Tester\Tester.csproj" />
   </ItemGroup>
 
 </Project>
