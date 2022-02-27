@@ -50,9 +50,10 @@ public class TesterService
 
         var xmlPath = GetFileDirectory(tempFolder, "REPORT.xml");
         var xmlDocument = XDocument.Load($"{xmlPath}");
-        var Issues = (from element in xmlDocument.Descendants("Issues")
-                           select element.Value);
-        if (Issues != null)
+        //var Issues = (from element in xmlDocument.Descendants("Issues")
+        //                   select element.HasElements);
+
+        if (xmlDocument.Elements("Project").Any())
             return new ResharperStage { Result = StatusCode.Error, Description = xmlDocument.ToString() };
         return new ResharperStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
     }

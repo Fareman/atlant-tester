@@ -97,15 +97,33 @@ public class TesterServiceTests
     }
 
     [Test]
-    public async Task ReshareperStage_CommandTest()
+    public async Task ReshareperStage_ValidCall()
     {
         //Arrange
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "ProjectSuccessfulBuild", SearchOption.AllDirectories).First();
+        var tempFolder = Directory.GetDirectories(path, "ResharperValidProject", SearchOption.AllDirectories).First();
         var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
         var expected = new ResharperStage {Result = StatusCode.Ok, Description = $"{description}"};
+
+        //Act
+        var actual = await _testerService.ExecResharperAsync(tempFolder);
+
+        //Assert
+        Assert.AreEqual(expected, actual);
+    }
+
+    [Test]
+    public async Task ReshareperStage_InvalidCall()
+    {
+        //Arrange
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+        var tempFolder = Directory.GetDirectories(path, "ResharperInvalidProject", SearchOption.AllDirectories).First();
+        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
+        var description = await File.ReadAllTextAsync(expectedDescription);
+
+        var expected = new ResharperStage { Result = StatusCode.Error, Description = $"{description}" };
 
         //Act
         var actual = await _testerService.ExecResharperAsync(tempFolder);
