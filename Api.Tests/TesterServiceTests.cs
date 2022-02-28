@@ -4,7 +4,9 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.Extensions.Logging;
+
 using Moq;
 
 using NUnit.Framework;
@@ -14,11 +16,14 @@ using Tester.ResponseObjects.ReportItems;
 
 public class TesterServiceTests
 {
+    private readonly ILogger<TesterService> _logger;
+
     private readonly Mock<IGitHubClient> _mockClient = new();
 
     private readonly TesterService _testerService;
-    private readonly ILogger<TesterService> _logger;
-    readonly string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+
+    private readonly string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+
     public TesterServiceTests()
     {
         _testerService = new TesterService(_mockClient.Object, _logger);

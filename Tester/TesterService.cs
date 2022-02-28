@@ -5,14 +5,16 @@ using System.Xml;
 using System.Xml.Linq;
 
 using CliWrap;
+
 using Microsoft.Extensions.Logging;
-using Serilog;
+
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
 public class TesterService
 {
     private readonly IGitHubClient _client;
+
     private readonly ILogger<TesterService> _logger;
 
     public TesterService(IGitHubClient client, ILogger<TesterService> logger)
@@ -31,20 +33,20 @@ public class TesterService
             var workingDirectory = Path.GetDirectoryName(slnPath);
 
             var dotnetCommand = await Cli.Wrap("dotnet")
-                                     .WithArguments($"build {slnPath}")
-                                     .WithWorkingDirectory(workingDirectory)
-                                     .WithValidation(CommandResultValidation.None)
-                                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-                                     .ExecuteAsync();
+                                         .WithArguments($"build {slnPath}")
+                                         .WithWorkingDirectory(workingDirectory)
+                                         .WithValidation(CommandResultValidation.None)
+                                         .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                                         .ExecuteAsync();
 
             if (dotnetCommand.ExitCode == 0)
-                return new BuildStage { Result = StatusCode.Ok, Description = "Successful build" };
-            return new BuildStage { Result = StatusCode.Error, Description = stdOutBuffer.ToString() };
+                return new BuildStage {Result = StatusCode.Ok, Description = "Successful build"};
+            return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError("Dotnet command threw an exception.");
-            return new BuildStage { Result = StatusCode.Exception, Description = ex.Message };
+            return new BuildStage {Result = StatusCode.Exception, Description = ex.Message};
         }
     }
 
@@ -57,14 +59,14 @@ public class TesterService
             var slnPath = FindSln(tempFolder);
 
             await Cli.Wrap("jb")
-                 .WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
-                 .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
-                 .WithWorkingDirectory(tempFolder)
-                 .ExecuteAsync();
+                     .WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
+                     .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
+                     .WithWorkingDirectory(tempFolder)
+                     .ExecuteAsync();
 
             var xmlPath = Path.Combine(tempFolder, "REPORT.xml");
-            string xmlFile = File.ReadAllText($"{xmlPath}");
-            XmlDocument xmldoc = new XmlDocument();
+            var xmlFile = File.ReadAllText($"{xmlPath}");
+            var xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlFile);
 
             var hasProjectIssues = false;
@@ -74,14 +76,14 @@ public class TesterService
                     hasProjectIssues = node.HasChildNodes;
             }
 
-            if(hasProjectIssues)
-                return new ResharperStage { Result = StatusCode.Error, Description = xmlFile.ToString() };
-            return new ResharperStage { Result = StatusCode.Ok, Description = xmlFile.ToString() };
+            if (hasProjectIssues)
+                return new ResharperStage {Result = StatusCode.Error, Description = xmlFile};
+            return new ResharperStage {Result = StatusCode.Ok, Description = xmlFile};
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError("Resharper command threw an exception.");
-            return new ResharperStage { Result = StatusCode.Exception, Description = ex.Message };
+            return new ResharperStage {Result = StatusCode.Exception, Description = ex.Message};
         }
     }
 
@@ -110,12 +112,13 @@ public class TesterService
                 var xmlDocument = XDocument.Load($"{postmanReport}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
+
             return new PostmanStage {Result = StatusCode.Error, Description = $"{stdErrBuffer}"};
         }
         catch (Exception ex)
         {
             _logger.LogError("Docker-compose threw an exception.");
-            return new PostmanStage { Result = StatusCode.Exception, Description = $"{ex.Message}" };
+            return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
         }
         finally
         {
