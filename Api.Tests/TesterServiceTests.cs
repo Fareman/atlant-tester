@@ -1,11 +1,14 @@
 namespace Api.Tests;
 
-using Moq;
-using NUnit.Framework;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
+using Moq;
+
+using NUnit.Framework;
+
 using Tester;
 using Tester.ResponseObjects.ReportItems;
 
@@ -23,7 +26,7 @@ public class TesterServiceTests
     [Test]
     public async Task CreateBuildAsync_InvalidCall()
     {
-        bool found = true;
+        var found = true;
         string[] errors =
         {
             "CS1003", "CS1002", "CS1022"
@@ -35,7 +38,7 @@ public class TesterServiceTests
         //Act
         var actual = await _testerService.CreateBuildAsync(tempFolder);
 
-        foreach (string s in errors)
+        foreach (var s in errors)
         {
             if (!actual.Description.Contains(s))
                 found = false;
@@ -87,10 +90,28 @@ public class TesterServiceTests
         var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
-        var expected = new PostmanStage { Result = StatusCode.Error, Description = $"{description}\r\n" };
+        var expected = new PostmanStage {Result = StatusCode.Error, Description = $"{description}\r\n"};
 
         //Act
         var actual = await _testerService.ExecTestsAsync(tempFolder);
+
+        //Assert
+        Assert.AreEqual(expected, actual);
+    }
+
+    [Test]
+    public async Task ReshareperStage_InvalidCall()
+    {
+        //Arrange
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+        var tempFolder = Directory.GetDirectories(path, "ResharperInvalidProject", SearchOption.AllDirectories).First();
+        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
+        var description = await File.ReadAllTextAsync(expectedDescription);
+
+        var expected = new ResharperStage {Result = StatusCode.Error, Description = $"{description}"};
+
+        //Act
+        var actual = await _testerService.ExecResharperAsync(tempFolder);
 
         //Assert
         Assert.AreEqual(expected, actual);
@@ -106,24 +127,6 @@ public class TesterServiceTests
         var description = await File.ReadAllTextAsync(expectedDescription);
 
         var expected = new ResharperStage {Result = StatusCode.Ok, Description = $"{description}"};
-
-        //Act
-        var actual = await _testerService.ExecResharperAsync(tempFolder);
-
-        //Assert
-        Assert.AreEqual(expected, actual);
-    }
-
-    [Test]
-    public async Task ReshareperStage_InvalidCall()
-    {
-        //Arrange
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "ResharperInvalidProject", SearchOption.AllDirectories).First();
-        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
-        var description = await File.ReadAllTextAsync(expectedDescription);
-
-        var expected = new ResharperStage { Result = StatusCode.Error, Description = $"{description}" };
 
         //Act
         var actual = await _testerService.ExecResharperAsync(tempFolder);

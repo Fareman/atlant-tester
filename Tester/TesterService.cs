@@ -54,7 +54,7 @@ public class TesterService
         //                   select element.HasElements);
 
         if (xmlDocument.Elements("Project").Any())
-            return new ResharperStage { Result = StatusCode.Error, Description = xmlDocument.ToString() };
+            return new ResharperStage {Result = StatusCode.Error, Description = xmlDocument.ToString()};
         return new ResharperStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
     }
 
@@ -63,36 +63,36 @@ public class TesterService
         var stdErrBuffer = new StringBuilder();
 
         var testProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
-        var serviceComposeFile = GetFileDirectory(Directory.GetCurrentDirectory(),"docker-compose.yml");
+        var serviceComposeFile = GetFileDirectory(Directory.GetCurrentDirectory(), "docker-compose.yml");
 
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
         try
         {
             var dockerCommand = await Cli.Wrap("docker-compose")
-                                     .WithArguments(
-                                         $"-f {testProjectComposeFile} -f {serviceComposeFile} up --abort-on-container-exit")
-                                     .WithWorkingDirectory(tempFolder)
-                                     .WithValidation(CommandResultValidation.None)
-                                     .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
-                                     .ExecuteAsync();
+                                         .WithArguments(
+                                             $"-f {testProjectComposeFile} -f {serviceComposeFile} up --abort-on-container-exit")
+                                         .WithWorkingDirectory(tempFolder)
+                                         .WithValidation(CommandResultValidation.None)
+                                         .WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer))
+                                         .ExecuteAsync();
 
             if (dockerCommand.ExitCode == 0)
             {
                 var postmanReport = GetFileDirectory(path, "newman-report.xml");
                 var xmlDocument = XDocument.Load($"{postmanReport}");
-                return new PostmanStage { Result = StatusCode.Ok, Description = xmlDocument.ToString() };
+                return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
 
-            return new PostmanStage { Result = StatusCode.Error, Description = $"{stdErrBuffer} \n" };
+            return new PostmanStage {Result = StatusCode.Error, Description = $"{stdErrBuffer} \n"};
         }
         finally
         {
             await Cli.Wrap("docker-compose")
-                .WithArguments("rm -f -s")
-                .WithWorkingDirectory(Directory.GetCurrentDirectory())
-                .WithValidation(CommandResultValidation.None)
-                .ExecuteAsync();
+                     .WithArguments("rm -f -s")
+                     .WithWorkingDirectory(Directory.GetCurrentDirectory())
+                     .WithValidation(CommandResultValidation.None)
+                     .ExecuteAsync();
             //Directory.Delete(tempFolder, true);
         }
     }
