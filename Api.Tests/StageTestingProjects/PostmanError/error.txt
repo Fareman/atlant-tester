@@ -1,18 +1,30 @@
-Microsoft (R) Build Engine version 17.0.0+c9eb9dd64 for .NET
-Copyright (C) Microsoft Corporation. All rights reserved.
+Creating network "postmanerror_default" with the default driver
+Creating postmanerror_api_1 ... 
 
-  Determining projects to restore...
-  All projects are up-to-date for restore.
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,5): error CS1003: Syntax error, ',' expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1002: ; expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1022: Type or namespace definition, or end-of-file expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
+Creating postmanerror_apitestingproject_1 ... 
 
-Build FAILED.
+Creating postmanerror_api_1               ... done
 
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,5): error CS1003: Syntax error, ',' expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1002: ; expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1022: Type or namespace definition, or end-of-file expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-    0 Warning(s)
-    3 Error(s)
+Creating postmanerror_apitestingproject_1 ... done
 
-Time Elapsed 00:00:01.17
+Creating postgres_container               ... 
+
+Creating postmanerror_postman_checks_1    ... 
+
+Creating postgres_container               ... done
+
+Creating postmanerror_postman_checks_1    ... done
+
+Stopping postgres_container               ... 
+
+Stopping postmanerror_api_1               ... 
+
+Stopping postmanerror_apitestingproject_1 ... 
+
+Stopping postmanerror_api_1               ... done
+
+Stopping postgres_container               ... done
+
+Stopping postmanerror_apitestingproject_1 ... done
+
+1

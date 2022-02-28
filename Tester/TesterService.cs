@@ -1,69 +1,96 @@
 ﻿namespace Tester;
 
 using System.Text;
+using System.Xml;
 using System.Xml.Linq;
 
 using CliWrap;
-
+using Microsoft.Extensions.Logging;
+using Serilog;
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
 public class TesterService
 {
     private readonly IGitHubClient _client;
+    private readonly ILogger<TesterService> _logger;
 
-    public TesterService(IGitHubClient client)
+    public TesterService(IGitHubClient client, ILogger<TesterService> logger)
     {
         _client = client;
+        _logger = logger;
     }
 
     public async Task<BuildStage> CreateBuildAsync(string tempFolder)
     {
-        var workingDirectory = Directory.GetDirectories(tempFolder, Path.GetDirectoryName("*.sln"), SearchOption.AllDirectories)
-                                        .First();
-        var slnPath = Directory.GetFiles(tempFolder, "*.sln", SearchOption.AllDirectories).First();
-
         var stdOutBuffer = new StringBuilder();
 
-        var dotnetCommand = await Cli.Wrap("dotnet")
+        try
+        {
+            var slnPath = FindSln(tempFolder);
+            var workingDirectory = Path.GetDirectoryName(slnPath);
+
+            var dotnetCommand = await Cli.Wrap("dotnet")
                                      .WithArguments($"build {slnPath}")
                                      .WithWorkingDirectory(workingDirectory)
                                      .WithValidation(CommandResultValidation.None)
                                      .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                                      .ExecuteAsync();
 
-        if (dotnetCommand.ExitCode == 0)
-            return new BuildStage {Result = StatusCode.Ok, Description = "Successful build"};
-        return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
+            if (dotnetCommand.ExitCode == 0)
+                return new BuildStage { Result = StatusCode.Ok, Description = "Successful build" };
+            return new BuildStage { Result = StatusCode.Error, Description = stdOutBuffer.ToString() };
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError("Dotnet command threw an exception.");
+            return new BuildStage { Result = StatusCode.Exception, Description = ex.Message };
+        }
     }
 
     public async Task<ResharperStage> ExecResharperAsync(string tempFolder)
     {
-        var slnPath = GetFileDirectory(tempFolder, "*.sln");
         var stdOutBuffer = new StringBuilder();
 
-        await Cli.Wrap("jb")
+        try
+        {
+            var slnPath = FindSln(tempFolder);
+
+            await Cli.Wrap("jb")
                  .WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
                  .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                  .WithWorkingDirectory(tempFolder)
                  .ExecuteAsync();
 
-        var xmlPath = GetFileDirectory(tempFolder, "REPORT.xml");
-        var xmlDocument = XDocument.Load($"{xmlPath}");
-        //var Issues = (from element in xmlDocument.Descendants("Issues")
-        //                   select element.HasElements);
+            var xmlPath = Path.Combine(tempFolder, "REPORT.xml");
+            string xmlFile = File.ReadAllText($"{xmlPath}");
+            XmlDocument xmldoc = new XmlDocument();
+            xmldoc.LoadXml(xmlFile);
 
-        if (xmlDocument.Elements("Project").Any())
-            return new ResharperStage {Result = StatusCode.Error, Description = xmlDocument.ToString()};
-        return new ResharperStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
+            var hasProjectIssues = false;
+            foreach (XmlNode node in xmldoc.DocumentElement.ChildNodes)
+            {
+                if (node.Name == "IssueTypes")
+                    hasProjectIssues = node.HasChildNodes;
+            }
+
+            if(hasProjectIssues)
+                return new ResharperStage { Result = StatusCode.Error, Description = xmlFile.ToString() };
+            return new ResharperStage { Result = StatusCode.Ok, Description = xmlFile.ToString() };
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError("Resharper command threw an exception.");
+            return new ResharperStage { Result = StatusCode.Exception, Description = ex.Message };
+        }
     }
 
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
     {
         var stdErrBuffer = new StringBuilder();
 
-        var testProjectComposeFile = GetFileDirectory(tempFolder, "docker-compose.yml");
-        var serviceComposeFile = GetFileDirectory(Directory.GetCurrentDirectory(), "docker-compose.yml");
+        var testProjectComposeFile = Path.Combine(tempFolder, "docker-compose.yml");
+        var serviceComposeFile = Path.Combine(Directory.GetCurrentDirectory(), "docker-compose.yml");
 
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
@@ -79,12 +106,16 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                var postmanReport = GetFileDirectory(path, "newman-report.xml");
+                var postmanReport = Path.Combine(path, "newman-report.xml");
                 var xmlDocument = XDocument.Load($"{postmanReport}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
-
-            return new PostmanStage {Result = StatusCode.Error, Description = $"{stdErrBuffer} \n"};
+            return new PostmanStage {Result = StatusCode.Error, Description = $"{stdErrBuffer}"};
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError("Docker-compose threw an exception.");
+            return new PostmanStage { Result = StatusCode.Exception, Description = $"{ex.Message}" };
         }
         finally
         {
@@ -122,9 +153,8 @@ public class TesterService
         return new Report {BuildStage = buildReport};
     }
 
-    private static string GetFileDirectory(string baseDirectory, string file)
+    private static string FindSln(string tempFolder)
     {
-        var path = Directory.GetFiles(baseDirectory, $"{file}", SearchOption.AllDirectories).First();
-        return path;
+        return Directory.GetFiles(tempFolder, "*.sln", SearchOption.AllDirectories).SingleOrDefault();
     }
 }

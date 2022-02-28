@@ -4,7 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Microsoft.Extensions.Logging;
 using Moq;
 
 using NUnit.Framework;
@@ -17,10 +17,11 @@ public class TesterServiceTests
     private readonly Mock<IGitHubClient> _mockClient = new();
 
     private readonly TesterService _testerService;
-
+    private readonly ILogger<TesterService> _logger;
+    readonly string path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
     public TesterServiceTests()
     {
-        _testerService = new TesterService(_mockClient.Object);
+        _testerService = new TesterService(_mockClient.Object, _logger);
     }
 
     [Test]
@@ -32,8 +33,7 @@ public class TesterServiceTests
             "CS1003", "CS1002", "CS1022"
         };
 
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "ProjectFailedBuild", SearchOption.AllDirectories).First();
+        var tempFolder = Path.Combine(path, @"StageTestingProjects\ProjectFailedBuild");
 
         //Act
         var actual = await _testerService.CreateBuildAsync(tempFolder);
@@ -52,7 +52,6 @@ public class TesterServiceTests
     public async Task CreateBuildAsync_ValidCall()
     {
         //Arrange
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
         var tempFolder = Directory.GetDirectories(path, "ProjectSuccessfulBuild", SearchOption.AllDirectories).First();
         var expected = new BuildStage {Result = StatusCode.Ok, Description = "Successful build"};
 
@@ -67,9 +66,8 @@ public class TesterServiceTests
     public async Task ExecTestsAsync_DockerError()
     {
         //Arrange
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "ContainerFailedBuild", SearchOption.AllDirectories).First();
-        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
+        var tempFolder = Path.Combine(path, @"StageTestingProjects\ContainerFailedBuild");
+        var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
         var expected = new PostmanStage {Result = StatusCode.Error, Description = $"{description}\r\n"};
@@ -85,9 +83,8 @@ public class TesterServiceTests
     public async Task ExecTestsAsync_InvalidPostmanError()
     {
         //Arrange
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "PostmanError", SearchOption.AllDirectories).First();
-        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
+        var tempFolder = Path.Combine(path, @"StageTestingProjects\PostmanError");
+        var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
         var expected = new PostmanStage {Result = StatusCode.Error, Description = $"{description}\r\n"};
@@ -103,9 +100,8 @@ public class TesterServiceTests
     public async Task ReshareperStage_InvalidCall()
     {
         //Arrange
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "ResharperInvalidProject", SearchOption.AllDirectories).First();
-        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
+        var tempFolder = Path.Combine(path, @"StageTestingProjects\ResharperInvalidProject");
+        var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
         var expected = new ResharperStage {Result = StatusCode.Error, Description = $"{description}"};
@@ -121,9 +117,8 @@ public class TesterServiceTests
     public async Task ReshareperStage_ValidCall()
     {
         //Arrange
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
-        var tempFolder = Directory.GetDirectories(path, "ResharperValidProject", SearchOption.AllDirectories).First();
-        var expectedDescription = GetFileDirectory(tempFolder, "error.txt");
+        var tempFolder = Path.Combine(path, @"StageTestingProjects\ResharperValidProject");
+        var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
         var expected = new ResharperStage {Result = StatusCode.Ok, Description = $"{description}"};
@@ -133,11 +128,5 @@ public class TesterServiceTests
 
         //Assert
         Assert.AreEqual(expected, actual);
-    }
-
-    private static string GetFileDirectory(string baseDirectory, string file)
-    {
-        var path = Directory.GetFiles(baseDirectory, $"{file}", SearchOption.AllDirectories).First();
-        return path;
     }
 }

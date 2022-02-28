@@ -4,5 +4,5 @@ public record ResharperStage
 {
     public string Description { get; init; } = null!;
 
-    public StatusCode Result { get; set; }
+    public StatusCode Result { get; set; } = StatusCode.Error;
 }
