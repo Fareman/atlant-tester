@@ -4,7 +4,7 @@
         "name": "resharper",
         "pre-push": "pre-push",
         "command": "jb",
-        "args": [ "cleanupcode", "./Api.sln", "--settings=./codestyle.DotSettings" ]
+        "args": [ "cleanupcode", "./Api.sln", "--settings=./Api/codestyle.DotSettings" ]
       }
    ]
 }

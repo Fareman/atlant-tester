@@ -13,11 +13,11 @@ using Tester.ResponseObjects.ReportItems;
 
 public class TesterService
 {
+    private static readonly string _slnName = "*.sln";
+
     private readonly IGitHubClient _client;
 
     private readonly ILogger<TesterService> _logger;
-
-    static readonly string _slnName = "*.sln";
 
     public TesterService(IGitHubClient client, ILogger<TesterService> logger)
     {
@@ -94,7 +94,8 @@ public class TesterService
     {
         var stdErrBuffer = new StringBuilder();
 
-        var testProjectComposeFile = Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
+        var testProjectComposeFile =
+            Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
         var serviceComposeFile = Path.Combine(Directory.GetCurrentDirectory(), "docker-compose.yml");
 
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
@@ -120,7 +121,7 @@ public class TesterService
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Docker-compose threw an exception.", ex);
+            _logger.LogError("Docker-compose threw an exception.", ex);
             return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
         }
         finally

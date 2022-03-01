@@ -16,9 +16,9 @@ using Tester.ResponseObjects.ReportItems;
 
 public class TesterServiceTests
 {
-    private readonly Mock<ILogger<TesterService>> _mockLogger = new();
-
     private readonly Mock<IGitHubClient> _mockClient = new();
+
+    private readonly Mock<ILogger<TesterService>> _mockLogger = new();
 
     private readonly TesterService _testerService;
 
