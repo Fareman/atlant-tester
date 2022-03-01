@@ -29,18 +29,6 @@
 	  <Content Include="..\Api\docker-compose.yml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="..\Api\Dockerfile">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="..\Api\docker-compose.dcproj">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="..\Api\docker-compose.override.yml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="..\Api\.dockerignore">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	  <Content Include="..\Api\codestyle.DotSettings">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

@@ -1,21 +1,21 @@
 version: '3.4'
-# Swap with line 17 before final launch
-# run testtap.postman_collection.json -e testtap.postman_environment.json
 
 services:
   api:
     image: ${DOCKER_REGISTRY-}api
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ../
+      dockerfile: Dockerfile
 
   postman_checks:
     image: postman/newman
-    depends_on:
-     - apitestingproject
+    #depends_on:
+    # - apitestingproject
     command:
-        run postman_collection.json
-        --reporters="junit,cli" --reporter-junit-export="newman-report.xml"
+        run -v ~/postman:/etc/newman testtap.postman_collection.json \
+        -e testtap.postman_environment.json \
+        --reporters="junit,cli" --reporter-junit-export="newman-report.xml" \
+        --suppress-exit-code
     volumes:
         - ./postman:/etc/newman
 
@@ -28,5 +28,5 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-    depends_on:
-     - apitestingproject
+    #depends_on:
+    # - apitestingproject

@@ -32,6 +32,7 @@ public class TesterServiceTests
     [Test]
     public async Task CreateBuildAsync_InvalidCall()
     {
+        //Arrange
         var found = true;
         string[] errors =
         {
@@ -87,18 +88,25 @@ public class TesterServiceTests
     [Test]
     public async Task ExecTestsAsync_InvalidPostmanError()
     {
+        var found = false;
+        string[] errors =
+        {
+            @"expected response to have status code 404 but got 200", "tests=\"1\" failures=\"1\""
+        };
+
         //Arrange
         var tempFolder = Path.Combine(path, @"StageTestingProjects\PostmanError");
-        var expectedDescription = Path.Combine(tempFolder, "error.txt");
-        var description = await File.ReadAllTextAsync(expectedDescription);
-
-        var expected = new PostmanStage {Result = StatusCode.Error, Description = $"{description}\r\n"};
 
         //Act
         var actual = await _testerService.ExecTestsAsync(tempFolder);
 
+        foreach (var s in errors)
+        {
+            if (actual.Description.Contains(s))
+                found = true;
+        }
         //Assert
-        Assert.AreEqual(expected, actual);
+        Assert.IsTrue(found);
     }
 
     [Test]

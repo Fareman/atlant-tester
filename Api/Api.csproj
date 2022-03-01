@@ -13,15 +13,6 @@
 	  <Content Include="docker-compose.yml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Dockerfile">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="docker-compose.dcproj">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="docker-compose.override.yml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
 	  <Content Include="codestyle.DotSettings">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>

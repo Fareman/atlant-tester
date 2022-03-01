@@ -1,30 +1,8 @@
-Creating network "postmanerror_default" with the default driver
-Creating postmanerror_api_1 ... 
-
-Creating postmanerror_apitestingproject_1 ... 
-
-Creating postmanerror_api_1               ... done
-
-Creating postmanerror_apitestingproject_1 ... done
-
-Creating postgres_container               ... 
-
-Creating postmanerror_postman_checks_1    ... 
-
-Creating postgres_container               ... done
-
-Creating postmanerror_postman_checks_1    ... done
-
-Stopping postgres_container               ... 
-
-Stopping postmanerror_api_1               ... 
-
-Stopping postmanerror_apitestingproject_1 ... 
-
-Stopping postmanerror_api_1               ... done
-
-Stopping postgres_container               ... done
-
-Stopping postmanerror_apitestingproject_1 ... done
-
-1
+<testsuites name="New Collection Copy" tests="1" time="0.076">
+  <testsuite name="New Request" id="912fc033-acd8-4139-848b-900b26e8d907" timestamp="2022-03-01T06:27:37.501Z" tests="1" failures="1" errors="0" time="0.076">
+    <testcase name="Status code is 200" time="0.076" classname="NewCollectionCopy">
+      <failure type="AssertionFailure" message="expected response to have status code 404 but got 200"><![CDATA[Failed 1 times.]]><![CDATA[Collection JSON ID: 8c9f56ee-91b6-497e-a362-70d7b39d28e9.]]><![CDATA[Collection name: New Collection Copy.]]><![CDATA[Request name: New Request.]]><![CDATA[Test description: Status code is 200.]]><![CDATA[Error message: expected response to have status code 404 but got 200.]]><![CDATA[Stacktrace: AssertionError: expected response to have status code 404 but got 200
+   at Object.eval sandbox-script.js:1:1).]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

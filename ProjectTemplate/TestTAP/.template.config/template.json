@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "KharinMikhail",
+  "classifications": [ "Web", "WebAPI", "Clean" ],
+  "identity": "TestTAP",
+  "name": "TAP back-end test task template",
+  "shortName": "testtap",
+  "preferNameDirectory": true,
+  "sourceName": "TestTAP",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  }
+}

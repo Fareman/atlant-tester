@@ -112,7 +112,7 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                var postmanReport = Path.Combine(path, @"postman\newman-report.xml");
+                var postmanReport = Path.Combine(tempFolder, @"postman\newman-report.xml");
                 var xmlDocument = XDocument.Load($"{postmanReport}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
