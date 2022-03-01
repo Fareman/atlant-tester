@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <Content Include="..\Api\docker-compose.yml">
+	  <Content Include="..\docker-compose.yml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="..\Api\codestyle.DotSettings">

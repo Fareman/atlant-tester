@@ -96,7 +96,7 @@ public class TesterService
 
         var testProjectComposeFile =
             Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
-        var serviceComposeFile = Path.Combine(Directory.GetCurrentDirectory(), "docker-compose.yml");
+        var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, "docker-compose.yml");
 
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 

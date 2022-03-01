@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <Content Include="docker-compose.yml">
+	  <Content Include="../docker-compose.yml">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="codestyle.DotSettings">

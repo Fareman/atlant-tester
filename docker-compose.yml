@@ -1,16 +1,11 @@
 version: '3.4'
 
 services:
-  api:
-    image: ${DOCKER_REGISTRY-}api
-    build:
-      context: ../
-      dockerfile: Dockerfile
-
   postman_checks:
+    container_name: postman
     image: postman/newman
-    #depends_on:
-    # - apitestingproject
+    depends_on:
+     - apitestingproject
     command:
         run -v ~/postman:/etc/newman testtap.postman_collection.json \
         -e testtap.postman_environment.json \
@@ -28,5 +23,5 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
-    #depends_on:
-    # - apitestingproject
+    depends_on:
+     - apitestingproject
