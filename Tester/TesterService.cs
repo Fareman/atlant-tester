@@ -17,6 +17,8 @@ public class TesterService
 
     private readonly ILogger<TesterService> _logger;
 
+    static readonly string _slnName = "*.sln";
+
     public TesterService(IGitHubClient client, ILogger<TesterService> logger)
     {
         _client = client;
@@ -45,7 +47,7 @@ public class TesterService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Dotnet command threw an exception.");
+            _logger.LogError("Dotnet command threw an exception.", ex);
             return new BuildStage {Result = StatusCode.Exception, Description = ex.Message};
         }
     }
@@ -57,9 +59,10 @@ public class TesterService
         try
         {
             var slnPath = FindSln(tempFolder);
+            var codeStyle = Path.Combine(Directory.GetCurrentDirectory(), "codestyle.DotSettings");
 
             await Cli.Wrap("jb")
-                     .WithArguments($"inspectcode {slnPath} --output=REPORT.xml")
+                     .WithArguments($"inspectcode {slnPath} --output=REPORT.xml --profile={codeStyle}")
                      .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                      .WithWorkingDirectory(tempFolder)
                      .ExecuteAsync();
@@ -82,7 +85,7 @@ public class TesterService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Resharper command threw an exception.");
+            _logger.LogError("Resharper command threw an exception.", ex);
             return new ResharperStage {Result = StatusCode.Exception, Description = ex.Message};
         }
     }
@@ -91,7 +94,7 @@ public class TesterService
     {
         var stdErrBuffer = new StringBuilder();
 
-        var testProjectComposeFile = Path.Combine(tempFolder, "docker-compose.yml");
+        var testProjectComposeFile = Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
         var serviceComposeFile = Path.Combine(Directory.GetCurrentDirectory(), "docker-compose.yml");
 
         var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
@@ -108,7 +111,7 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                var postmanReport = Path.Combine(path, "newman-report.xml");
+                var postmanReport = Path.Combine(path, @"postman\newman-report.xml");
                 var xmlDocument = XDocument.Load($"{postmanReport}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
@@ -117,7 +120,7 @@ public class TesterService
         }
         catch (Exception ex)
         {
-            _logger.LogError("Docker-compose threw an exception.");
+            _logger.LogError($"Docker-compose threw an exception.", ex);
             return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
         }
         finally
@@ -158,6 +161,6 @@ public class TesterService
 
     private static string FindSln(string tempFolder)
     {
-        return Directory.GetFiles(tempFolder, "*.sln", SearchOption.AllDirectories).SingleOrDefault();
+        return Directory.GetFiles(tempFolder, $"{_slnName}", SearchOption.AllDirectories).SingleOrDefault();
     }
 }
