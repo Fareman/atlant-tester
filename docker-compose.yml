@@ -3,8 +3,9 @@ version: '3.4'
 services:
   postman_checks:
     image: postman/newman
+    container_name: athlant_postman_container
     depends_on:
-     - apitestingproject
+     - testtap
     command:
         run https://www.getpostman.com/collections/fa64f6a750163eae464a
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml" -x
@@ -13,6 +14,7 @@ services:
 
   postgres:
     image: postgres
+    container_name: athlant_postgres_container
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
@@ -20,4 +22,4 @@ services:
       - "5432:5432"
     restart: unless-stopped
     depends_on:
-     - apitestingproject
+      - testtap

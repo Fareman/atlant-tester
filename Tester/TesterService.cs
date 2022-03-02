@@ -31,7 +31,8 @@ public class TesterService
         {
             var slnPath = FindSln(tempFolder);
             if (!File.Exists(slnPath))
-                throw new DirectoryNotFoundException($"В директории {tempFolder} решение отсутствует или имеет неверное имя. Должно быть TestTAP.sln");
+                throw new DirectoryNotFoundException(
+                    $"В директории {tempFolder} решение отсутствует или имеет неверное имя. Должно быть TestTAP.sln");
             var workingDirectory = Path.GetDirectoryName(slnPath);
 
             var dotnetCommand = await Cli.Wrap("dotnet")
@@ -71,7 +72,8 @@ public class TesterService
 
             var xmlPath = Path.Combine(tempFolder, xmlName);
             if (!File.Exists(xmlPath))
-                return new ResharperStage { Result = StatusCode.Exception, Description = $"В директории {tempFolder} нет файла {xmlPath}." };
+                return new ResharperStage
+                    {Result = StatusCode.Exception, Description = $"В директории {tempFolder} нет файла {xmlPath}."};
             var xmlFile = File.ReadAllText($"{xmlPath}");
             var xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlFile);
@@ -105,7 +107,8 @@ public class TesterService
             Directory.GetFiles(tempFolder, testProjectComposeName, SearchOption.AllDirectories).SingleOrDefault();
 
         if (testProjectComposeFile == default)
-            return new PostmanStage { Result = StatusCode.Error, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}." };
+            return new PostmanStage
+                {Result = StatusCode.Error, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}."};
 
         var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, serviceComposeName);
 
@@ -133,7 +136,15 @@ public class TesterService
         catch (Exception ex)
         {
             _logger.LogError("Docker-compose threw an exception.", ex);
-            return new PostmanStage { Result = StatusCode.Exception, Description = $"{ex.Message}" };
+            return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
+        }
+        finally
+        {
+            await Cli.Wrap("docker-compose")
+                .WithArguments("rm athlant_postgres_container athlant_postman_container testtap -f")
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteAsync();
+            Directory.Delete(tempFolder, true);
         }
     }
 
