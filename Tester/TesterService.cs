@@ -1,20 +1,15 @@
 ﻿namespace Tester;
 
+using CliWrap;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-
-using CliWrap;
-
-using Microsoft.Extensions.Logging;
-
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
 public class TesterService
 {
-    private static readonly string _slnName = "*.sln";
-
     private readonly IGitHubClient _client;
 
     private readonly ILogger<TesterService> _logger;
@@ -54,20 +49,20 @@ public class TesterService
 
     public async Task<ResharperStage> ExecResharperAsync(string tempFolder)
     {
-        var stdOutBuffer = new StringBuilder();
-
         try
         {
+            const string xmlName = "REPORT.xml";
             var slnPath = FindSln(tempFolder);
             var codeStyle = Path.Combine(Directory.GetCurrentDirectory(), "codestyle.DotSettings");
+            var stdOutBuffer = new StringBuilder();
 
             await Cli.Wrap("jb")
-                     .WithArguments($"inspectcode {slnPath} --output=REPORT.xml --profile={codeStyle}")
+                     .WithArguments($"inspectcode {slnPath} --output={xmlName} --profile={codeStyle}")
                      .WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer))
                      .WithWorkingDirectory(tempFolder)
                      .ExecuteAsync();
 
-            var xmlPath = Path.Combine(tempFolder, "REPORT.xml");
+            var xmlPath = FindXml(tempFolder, xmlName);
             var xmlFile = File.ReadAllText($"{xmlPath}");
             var xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlFile);
@@ -92,12 +87,18 @@ public class TesterService
 
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
     {
+        const string testProjectComposeName = "docker-compose.yml"; 
+        const string serviceComposeName = "docker-compose.yml"; 
+
         var stdErrBuffer = new StringBuilder();
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
         var testProjectComposeFile =
-            Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
-        var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, "docker-compose.yml");
+            Directory.GetFiles(tempFolder, testProjectComposeName, SearchOption.AllDirectories).SingleOrDefault();
+
+        if (File.Exists(testProjectComposeFile))
+            throw new DirectoryNotFoundException($"В данной директории нет файла {testProjectComposeName}.");
+
+        var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, serviceComposeName);
 
         try
         {
@@ -111,8 +112,10 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                var postmanReport = Path.Combine(path, @"postman\newman-report.xml");
-                var xmlDocument = XDocument.Load($"{postmanReport}");
+                var postmanReportDirectory = "postman\newman-report.xml";
+                var projectRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
+                var reportPath = FindXml(projectRootPath, postmanReportDirectory);
+                var xmlDocument = XDocument.Load($"{reportPath}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
 
@@ -139,19 +142,31 @@ public class TesterService
     {
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
         var buildReport = await CreateBuildAsync(tempFolder);
-        if (buildReport.Result == StatusCode.Ok)
-        {
-            var resharperReport = await ExecResharperAsync(tempFolder);
-            var postamanReport = await ExecTestsAsync(tempFolder);
-            var report = MakeReport(buildReport, resharperReport, postamanReport);
-            return report;
-        }
-
-        return new Report {BuildStage = buildReport};
+        if (buildReport.Result != StatusCode.Ok)
+            return new Report { BuildStage = buildReport };
+        var resharperReport = await ExecResharperAsync(tempFolder);
+        var postamanReport = await ExecTestsAsync(tempFolder);
+        var report = MakeReport(buildReport, resharperReport, postamanReport);
+        return report;
     }
 
     private static string FindSln(string tempFolder)
     {
-        return Directory.GetFiles(tempFolder, $"{_slnName}", SearchOption.AllDirectories).SingleOrDefault();
+        const string slnName = "TestTAP.sln";
+
+        var slnPath = Directory.GetFiles(tempFolder, $"{slnName}", SearchOption.AllDirectories).SingleOrDefault();
+
+        if(string.IsNullOrEmpty(slnPath))
+            throw new DirectoryNotFoundException($"В данной директории нет файла {slnName}.");
+        return slnPath;
+    }
+
+    private static string FindXml(string tempFolder, string xmlName)
+    {
+        var xmlPath = Path.Combine(tempFolder, xmlName);
+
+        if (File.Exists(xmlPath))
+            throw new DirectoryNotFoundException($"В данной директории нет файла {xmlName}.");
+        return xmlPath;
     }
 }
