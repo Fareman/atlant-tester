@@ -2,20 +2,16 @@ version: '3.4'
 
 services:
   postman_checks:
-    container_name: postman
     image: postman/newman
     depends_on:
      - apitestingproject
     command:
-        run -v ~/postman:/etc/newman testtap.postman_collection.json \
-        -e testtap.postman_environment.json \
-        --reporters="junit,cli" --reporter-junit-export="newman-report.xml" \
-        --suppress-exit-code
+        run https://www.getpostman.com/collections/fa64f6a750163eae464a
+        --reporters="junit,cli" --reporter-junit-export="newman-report.xml" -x
     volumes:
         - ./postman:/etc/newman
 
   postgres:
-    container_name: postgres_container
     image: postgres
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}

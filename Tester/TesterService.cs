@@ -93,12 +93,12 @@ public class TesterService
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
     {
         var stdErrBuffer = new StringBuilder();
+        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
         var testProjectComposeFile =
             Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
         var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, "docker-compose.yml");
 
-        var path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
 
         try
         {
@@ -112,7 +112,7 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                var postmanReport = Path.Combine(tempFolder, @"postman\newman-report.xml");
+                var postmanReport = Path.Combine(path, @"postman\newman-report.xml");
                 var xmlDocument = XDocument.Load($"{postmanReport}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
@@ -126,11 +126,11 @@ public class TesterService
         }
         finally
         {
-            await Cli.Wrap("docker-compose")
-                     .WithArguments("rm -f -s")
-                     .WithWorkingDirectory(Directory.GetCurrentDirectory())
-                     .WithValidation(CommandResultValidation.None)
-                     .ExecuteAsync();
+            //await Cli.Wrap("docker-compose")
+            //         .WithArguments("rm -f -s")
+            //         .WithWorkingDirectory(Directory.GetCurrentDirectory())
+            //         .WithValidation(CommandResultValidation.None)
+            //         .ExecuteAsync();
             //Directory.Delete(tempFolder, true);
         }
     }

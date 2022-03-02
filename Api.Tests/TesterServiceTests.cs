@@ -105,6 +105,7 @@ public class TesterServiceTests
             if (actual.Description.Contains(s))
                 found = true;
         }
+
         //Assert
         Assert.IsTrue(found);
     }
