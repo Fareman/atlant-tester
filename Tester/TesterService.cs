@@ -1,10 +1,13 @@
 ﻿namespace Tester;
 
-using CliWrap;
-using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+
+using CliWrap;
+
+using Microsoft.Extensions.Logging;
+
 using Tester.ResponseObjects;
 using Tester.ResponseObjects.ReportItems;
 
@@ -27,6 +30,8 @@ public class TesterService
         try
         {
             var slnPath = FindSln(tempFolder);
+            if (!File.Exists(slnPath))
+                throw new DirectoryNotFoundException($"В директории {tempFolder} решение отсутствует или имеет неверное имя. Должно быть TestTAP.sln");
             var workingDirectory = Path.GetDirectoryName(slnPath);
 
             var dotnetCommand = await Cli.Wrap("dotnet")
@@ -37,12 +42,12 @@ public class TesterService
                                          .ExecuteAsync();
 
             if (dotnetCommand.ExitCode == 0)
-                return new BuildStage {Result = StatusCode.Ok, Description = "Successful build"};
+                return new BuildStage {Result = StatusCode.Ok, Description = "Сборка завершена успешно."};
             return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
         }
         catch (Exception ex)
         {
-            _logger.LogError("Dotnet command threw an exception.", ex);
+            _logger.LogError("Найдено исключение на стадии сборки.", ex);
             return new BuildStage {Result = StatusCode.Exception, Description = ex.Message};
         }
     }
@@ -53,6 +58,8 @@ public class TesterService
         {
             const string xmlName = "REPORT.xml";
             var slnPath = FindSln(tempFolder);
+            if (!File.Exists(slnPath))
+                throw new DirectoryNotFoundException($"В директории {tempFolder} нет решения.");
             var codeStyle = Path.Combine(Directory.GetCurrentDirectory(), "codestyle.DotSettings");
             var stdOutBuffer = new StringBuilder();
 
@@ -62,7 +69,9 @@ public class TesterService
                      .WithWorkingDirectory(tempFolder)
                      .ExecuteAsync();
 
-            var xmlPath = FindXml(tempFolder, xmlName);
+            var xmlPath = Path.Combine(tempFolder, xmlName);
+            if (!File.Exists(xmlPath))
+                return new ResharperStage { Result = StatusCode.Exception, Description = $"В директории {tempFolder} нет файла {xmlPath}." };
             var xmlFile = File.ReadAllText($"{xmlPath}");
             var xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlFile);
@@ -87,16 +96,16 @@ public class TesterService
 
     public async Task<PostmanStage> ExecTestsAsync(string tempFolder)
     {
-        const string testProjectComposeName = "docker-compose.yml"; 
-        const string serviceComposeName = "docker-compose.yml"; 
+        const string testProjectComposeName = "docker-compose.yml";
+        const string serviceComposeName = "docker-compose.yml";
 
         var stdErrBuffer = new StringBuilder();
 
         var testProjectComposeFile =
             Directory.GetFiles(tempFolder, testProjectComposeName, SearchOption.AllDirectories).SingleOrDefault();
 
-        if (File.Exists(testProjectComposeFile))
-            throw new DirectoryNotFoundException($"В данной директории нет файла {testProjectComposeName}.");
+        if (testProjectComposeFile == default)
+            return new PostmanStage { Result = StatusCode.Error, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}." };
 
         var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, serviceComposeName);
 
@@ -112,9 +121,9 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                var postmanReportDirectory = "postman\newman-report.xml";
+                const string postmanReportDirectory = "postman\newman-report.xml";
                 var projectRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
-                var reportPath = FindXml(projectRootPath, postmanReportDirectory);
+                var reportPath = Path.Combine(tempFolder, postmanReportDirectory);
                 var xmlDocument = XDocument.Load($"{reportPath}");
                 return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
             }
@@ -124,7 +133,7 @@ public class TesterService
         catch (Exception ex)
         {
             _logger.LogError("Docker-compose threw an exception.", ex);
-            return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
+            return new PostmanStage { Result = StatusCode.Exception, Description = $"{ex.Message}" };
         }
     }
 
@@ -143,7 +152,7 @@ public class TesterService
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
         var buildReport = await CreateBuildAsync(tempFolder);
         if (buildReport.Result != StatusCode.Ok)
-            return new Report { BuildStage = buildReport };
+            return new Report {BuildStage = buildReport};
         var resharperReport = await ExecResharperAsync(tempFolder);
         var postamanReport = await ExecTestsAsync(tempFolder);
         var report = MakeReport(buildReport, resharperReport, postamanReport);
@@ -154,19 +163,6 @@ public class TesterService
     {
         const string slnName = "TestTAP.sln";
 
-        var slnPath = Directory.GetFiles(tempFolder, $"{slnName}", SearchOption.AllDirectories).SingleOrDefault();
-
-        if(string.IsNullOrEmpty(slnPath))
-            throw new DirectoryNotFoundException($"В данной директории нет файла {slnName}.");
-        return slnPath;
-    }
-
-    private static string FindXml(string tempFolder, string xmlName)
-    {
-        var xmlPath = Path.Combine(tempFolder, xmlName);
-
-        if (File.Exists(xmlPath))
-            throw new DirectoryNotFoundException($"В данной директории нет файла {xmlName}.");
-        return xmlPath;
+        return Directory.GetFiles(tempFolder, slnName, SearchOption.AllDirectories).SingleOrDefault();
     }
 }
