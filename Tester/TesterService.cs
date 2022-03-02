@@ -99,7 +99,6 @@ public class TesterService
             Directory.GetFiles(tempFolder, "docker-compose.yml", SearchOption.AllDirectories).SingleOrDefault();
         var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, "docker-compose.yml");
 
-
         try
         {
             var dockerCommand = await Cli.Wrap("docker-compose")
@@ -123,15 +122,6 @@ public class TesterService
         {
             _logger.LogError("Docker-compose threw an exception.", ex);
             return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
-        }
-        finally
-        {
-            //await Cli.Wrap("docker-compose")
-            //         .WithArguments("rm -f -s")
-            //         .WithWorkingDirectory(Directory.GetCurrentDirectory())
-            //         .WithValidation(CommandResultValidation.None)
-            //         .ExecuteAsync();
-            //Directory.Delete(tempFolder, true);
         }
     }
 
