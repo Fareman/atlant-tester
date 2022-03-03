@@ -88,13 +88,17 @@ public class TesterServiceTests
     [Test]
     public async Task ExecTestsAsync_InvalidPostmanError()
     {
+        //Arrange
         var found = false;
         string[] errors =
         {
-            @"expected response to have status code 404 but got 200", "tests=\"1\" failures=\"1\""
+            "PostPerson", "tests=\"1\" failures=\"1\"",
+            "GetPersons",
+            "GetPersonId",
+            "DeletePersonId",
+            "DeletePersonId"
         };
 
-        //Arrange
         var tempFolder = Path.Combine(_path, @"StageTestingProjects\PostmanError");
 
         //Act
@@ -102,29 +106,35 @@ public class TesterServiceTests
 
         foreach (var s in errors)
         {
-            if (actual.Description.Contains(s))
+            if (!actual.Description.Contains(s))
                 found = true;
         }
 
         //Assert
-        Assert.AreEqual(found, actual);
+        Assert.IsFalse(found);
     }
 
     [Test]
     public async Task Postman_ValidCall()
     {
         //Arrange
-        var tempFolder = Path.Combine(_path, @"StageTestingProjects\PostmanRealExample");
-        var expectedDescription = Path.Combine(tempFolder, "error.txt");
-        var description = await File.ReadAllTextAsync(expectedDescription);
+        var found = false;
+        string[] errors =
+        {
+            "PostPerson", "tests=\"1\" failures=\"1\"",
+            "GetPersons",
+            "GetPersonId",
+            "DeletePersonId",
+            "DeletePersonId"
+        };
 
-        var expected = new ResharperStage { Result = StatusCode.Ok, Description = $"{description}" };
+        var tempFolder = Path.Combine(_path, @"StageTestingProjects\PostmanRealExample");
 
         //Act
         var actual = await _testerService.ExecTestsAsync(tempFolder);
 
         //Assert
-        Assert.AreEqual(expected, actual);
+        Assert.AreEqual("0", actual);
     }
 
     [Test]

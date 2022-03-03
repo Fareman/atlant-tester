@@ -27,6 +27,7 @@ public class GitHubClient : IGitHubClient
         var repoBytes = await _client.DownloadDataAsync(new RestRequest(gitUrl));
         await File.WriteAllBytesAsync(zipFolder, repoBytes);
         ZipFile.ExtractToDirectory(zipFolder, tempFolder);
+        Directory.Delete(zipFolder, true);
         return tempFolder;
     }
 }

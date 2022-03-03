@@ -77,7 +77,6 @@ public class TesterService
             var xmlFile = File.ReadAllText($"{xmlPath}");
             var xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlFile);
-
             var hasProjectIssues = false;
             foreach (XmlNode node in xmldoc.DocumentElement.ChildNodes)
             {
@@ -141,10 +140,10 @@ public class TesterService
         finally
         {
             await Cli.Wrap("docker-compose")
-                     .WithArguments("rmi")
-                     .WithWorkingDirectory(tempFolder)
-                     .WithValidation(CommandResultValidation.None)
-                     .ExecuteAsync();
+                .WithArguments($"-f {testProjectComposeFile} -f {serviceComposeFile} down --volumes")
+                .WithWorkingDirectory(tempFolder)
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteAsync();
             //Directory.Delete(tempFolder, true);
         }
     }
