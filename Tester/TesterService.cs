@@ -43,13 +43,13 @@ public class TesterService
                                          .ExecuteAsync();
 
             if (dotnetCommand.ExitCode == 0)
-                return new BuildStage {Result = StatusCode.Ok, Description = "Сборка завершена успешно."};
-            return new BuildStage {Result = StatusCode.Error, Description = stdOutBuffer.ToString()};
+                return new BuildStage { Result = StatusCode.Ok, Description = "Сборка завершена успешно." };
+            return new BuildStage { Result = StatusCode.Error, Description = stdOutBuffer.ToString() };
         }
         catch (Exception ex)
         {
             _logger.LogError("Найдено исключение на стадии сборки.", ex);
-            return new BuildStage {Result = StatusCode.Exception, Description = ex.Message};
+            return new BuildStage { Result = StatusCode.Exception, Description = ex.Message };
         }
     }
 
@@ -73,7 +73,7 @@ public class TesterService
             var xmlPath = Path.Combine(tempFolder, xmlName);
             if (!File.Exists(xmlPath))
                 return new ResharperStage
-                    {Result = StatusCode.Exception, Description = $"В директории {tempFolder} нет файла {xmlPath}."};
+                    { Result = StatusCode.Exception, Description = $"В директории {tempFolder} нет файла {xmlPath}." };
             var xmlFile = File.ReadAllText($"{xmlPath}");
             var xmldoc = new XmlDocument();
             xmldoc.LoadXml(xmlFile);
@@ -86,13 +86,13 @@ public class TesterService
             }
 
             if (hasProjectIssues)
-                return new ResharperStage {Result = StatusCode.Error, Description = xmlFile};
-            return new ResharperStage {Result = StatusCode.Ok, Description = xmlFile};
+                return new ResharperStage { Result = StatusCode.Error, Description = xmlFile };
+            return new ResharperStage { Result = StatusCode.Ok, Description = xmlFile };
         }
         catch (Exception ex)
         {
             _logger.LogError("Resharper command threw an exception.", ex);
-            return new ResharperStage {Result = StatusCode.Exception, Description = ex.Message};
+            return new ResharperStage { Result = StatusCode.Exception, Description = ex.Message };
         }
     }
 
@@ -108,7 +108,7 @@ public class TesterService
 
         if (testProjectComposeFile == default)
             return new PostmanStage
-                {Result = StatusCode.Error, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}."};
+                { Result = StatusCode.Error, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}." };
 
         var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, serviceComposeName);
 
@@ -128,23 +128,23 @@ public class TesterService
                 var projectRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
                 var reportPath = Path.Combine(tempFolder, postmanReportDirectory);
                 var xmlDocument = XDocument.Load($"{reportPath}");
-                return new PostmanStage {Result = StatusCode.Ok, Description = xmlDocument.ToString()};
+                return new PostmanStage { Result = StatusCode.Ok, Description = xmlDocument.ToString() };
             }
 
-            return new PostmanStage {Result = StatusCode.Error, Description = $"{stdErrBuffer}"};
+            return new PostmanStage { Result = StatusCode.Error, Description = $"{stdErrBuffer}" };
         }
         catch (Exception ex)
         {
             _logger.LogError("Docker-compose threw an exception.", ex);
-            return new PostmanStage {Result = StatusCode.Exception, Description = $"{ex.Message}"};
+            return new PostmanStage { Result = StatusCode.Exception, Description = $"{ex.Message}" };
         }
         finally
         {
             await Cli.Wrap("docker-compose")
-                .WithArguments("rmi")
-                .WithWorkingDirectory(tempFolder)
-                .WithValidation(CommandResultValidation.None)
-                .ExecuteAsync();
+                     .WithArguments("rmi")
+                     .WithWorkingDirectory(tempFolder)
+                     .WithValidation(CommandResultValidation.None)
+                     .ExecuteAsync();
             //Directory.Delete(tempFolder, true);
         }
     }
@@ -164,7 +164,7 @@ public class TesterService
         var tempFolder = await _client.DownloadRepoAsync(gitUri);
         var buildReport = await CreateBuildAsync(tempFolder);
         if (buildReport.Result != StatusCode.Ok)
-            return new Report {BuildStage = buildReport};
+            return new Report { BuildStage = buildReport };
         var resharperReport = await ExecResharperAsync(tempFolder);
         var postamanReport = await ExecTestsAsync(tempFolder);
         var report = MakeReport(buildReport, resharperReport, postamanReport);

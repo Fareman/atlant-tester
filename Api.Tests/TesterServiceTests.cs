@@ -20,9 +20,9 @@ public class TesterServiceTests
 
     private readonly Mock<ILogger<TesterService>> _mockLogger = new();
 
-    private readonly TesterService _testerService;
-
     private readonly string _path = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\"));
+
+    private readonly TesterService _testerService;
 
     public TesterServiceTests()
     {
@@ -59,7 +59,7 @@ public class TesterServiceTests
     {
         //Arrange
         var tempFolder = Directory.GetDirectories(_path, "ProjectSuccessfulBuild", SearchOption.AllDirectories).First();
-        var expected = new BuildStage {Result = StatusCode.Ok, Description = "Сборка завершена успешно." };
+        var expected = new BuildStage { Result = StatusCode.Ok, Description = "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ." };
 
         //Act
         var actual = await _testerService.CreateBuildAsync(tempFolder);
@@ -76,7 +76,7 @@ public class TesterServiceTests
         var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
-        var expected = new PostmanStage {Result = StatusCode.Error, Description = $"{description}"};
+        var expected = new PostmanStage { Result = StatusCode.Error, Description = $"{description}" };
 
         //Act
         var actual = await _testerService.ExecTestsAsync(tempFolder);
@@ -111,6 +111,23 @@ public class TesterServiceTests
     }
 
     [Test]
+    public async Task Postman_ValidCall()
+    {
+        //Arrange
+        var tempFolder = Path.Combine(_path, @"StageTestingProjects\PostmanRealExample");
+        var expectedDescription = Path.Combine(tempFolder, "error.txt");
+        var description = await File.ReadAllTextAsync(expectedDescription);
+
+        var expected = new ResharperStage { Result = StatusCode.Ok, Description = $"{description}" };
+
+        //Act
+        var actual = await _testerService.ExecTestsAsync(tempFolder);
+
+        //Assert
+        Assert.AreEqual(expected, actual);
+    }
+
+    [Test]
     public async Task ReshareperStage_InvalidCall()
     {
         //Arrange
@@ -118,7 +135,7 @@ public class TesterServiceTests
         var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
-        var expected = new ResharperStage {Result = StatusCode.Error, Description = $"{description}"};
+        var expected = new ResharperStage { Result = StatusCode.Error, Description = $"{description}" };
 
         //Act
         var actual = await _testerService.ExecResharperAsync(tempFolder);
@@ -135,27 +152,10 @@ public class TesterServiceTests
         var expectedDescription = Path.Combine(tempFolder, "error.txt");
         var description = await File.ReadAllTextAsync(expectedDescription);
 
-        var expected = new ResharperStage {Result = StatusCode.Ok, Description = $"{description}"};
+        var expected = new ResharperStage { Result = StatusCode.Ok, Description = $"{description}" };
 
         //Act
         var actual = await _testerService.ExecResharperAsync(tempFolder);
-
-        //Assert
-        Assert.AreEqual(expected, actual);
-    }
-    
-    [Test]
-    public async Task Postman_ValidCall()
-    {
-        //Arrange
-        var tempFolder = Path.Combine(_path, @"StageTestingProjects\PostmanRealExample");
-        var expectedDescription = Path.Combine(tempFolder, "error.txt");
-        var description = await File.ReadAllTextAsync(expectedDescription);
-
-        var expected = new ResharperStage {Result = StatusCode.Ok, Description = $"{description}"};
-
-        //Act
-        var actual = await _testerService.ExecTestsAsync(tempFolder);
 
         //Assert
         Assert.AreEqual(expected, actual);
