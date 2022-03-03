@@ -25,15 +25,14 @@ public class TesterService
 
     public async Task<BuildStage> CreateBuildAsync(string tempFolder)
     {
-        var stdOutBuffer = new StringBuilder();
-
         try
         {
             var slnPath = FindSln(tempFolder);
-            if (!File.Exists(slnPath))
-                throw new DirectoryNotFoundException(
-                    $"В директории {tempFolder} отсутствует решение TestTAP.sln.");
+            if (slnPath == default)
+                return new BuildStage { Result = StatusCode.Exception, Description = $"В директории {tempFolder} отсутствует решение TestTAP.sln." };
             var workingDirectory = Path.GetDirectoryName(slnPath);
+
+            var stdOutBuffer = new StringBuilder();
 
             var dotnetCommand = await Cli.Wrap("dotnet")
                                          .WithArguments($"build {slnPath}")
@@ -59,8 +58,8 @@ public class TesterService
         {
             const string xmlName = "REPORT.xml";
             var slnPath = FindSln(tempFolder);
-            if (!File.Exists(slnPath))
-                throw new DirectoryNotFoundException($"В директории {tempFolder} отсутствует решение TestTAP.sln.");
+            if (slnPath == default)
+                return new ResharperStage { Result = StatusCode.Exception, Description = $"В директории {tempFolder} отсутствует решение TestTAP.sln." };
             var codeStyle = Path.Combine(Directory.GetCurrentDirectory(), "codestyle.DotSettings");
             var stdOutBuffer = new StringBuilder();
 
@@ -107,7 +106,7 @@ public class TesterService
 
         if (testProjectComposeFile == default)
             return new PostmanStage
-                { Result = StatusCode.Error, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}." };
+                { Result = StatusCode.Exception, Description = $"В директории {tempFolder} нет файла {testProjectComposeName}." };
 
         var serviceComposeFile = Path.Combine(AppContext.BaseDirectory, serviceComposeName);
 
@@ -140,10 +139,10 @@ public class TesterService
         finally
         {
             await Cli.Wrap("docker-compose")
-                .WithArguments($"-f {testProjectComposeFile} -f {serviceComposeFile} down --volumes")
-                .WithWorkingDirectory(tempFolder)
-                .WithValidation(CommandResultValidation.None)
-                .ExecuteAsync();
+                     .WithArguments($"-f {testProjectComposeFile} -f {serviceComposeFile} down --volumes")
+                     .WithWorkingDirectory(tempFolder)
+                     .WithValidation(CommandResultValidation.None)
+                     .ExecuteAsync();
             //Directory.Delete(tempFolder, true);
         }
     }

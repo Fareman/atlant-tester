@@ -7,7 +7,7 @@ services:
     depends_on:
      - testtap
     command:
-        run https://www.getpostman.com/collections/777348f8eb4d715d6b10
+        run collection.json
         --reporters="junit,cli" --reporter-junit-export="newman-report.xml" -x
     volumes:
         - ./postman:/etc/newman

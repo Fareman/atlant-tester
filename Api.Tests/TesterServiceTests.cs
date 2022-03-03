@@ -33,7 +33,7 @@ public class TesterServiceTests
     public async Task CreateBuildAsync_InvalidCall()
     {
         //Arrange
-        var found = false;
+        var errorCodesNotFound = false;
         string[] errors =
         {
             "CS0116", "CS0118", "CS0246", "CS0538", "CS0501"
@@ -47,11 +47,11 @@ public class TesterServiceTests
         foreach (var s in errors)
         {
             if (!actual.Description.Contains(s))
-                found = true;
+                errorCodesNotFound = true;
         }
 
         //Assert
-        Assert.IsFalse(found);
+        Assert.IsFalse(errorCodesNotFound);
     }
 
     [Test]
@@ -89,7 +89,7 @@ public class TesterServiceTests
     public async Task ExecTestsAsync_InvalidPostmanError()
     {
         //Arrange
-        var found = false;
+        var reportPartsNotFound = false;
         string[] errors =
         {
             "PostPerson", "tests=\"1\" failures=\"1\"",
@@ -107,18 +107,18 @@ public class TesterServiceTests
         foreach (var s in errors)
         {
             if (!actual.Description.Contains(s))
-                found = true;
+                reportPartsNotFound = true;
         }
 
         //Assert
-        Assert.IsFalse(found);
+        Assert.IsFalse(reportPartsNotFound);
     }
 
     [Test]
     public async Task Postman_ValidCall()
     {
         //Arrange
-        var found = false;
+        var reportPartsNotFound = false;
         string[] errors =
         {
             "PostPerson", "tests=\"1\" failures=\"1\"",
@@ -133,8 +133,14 @@ public class TesterServiceTests
         //Act
         var actual = await _testerService.ExecTestsAsync(tempFolder);
 
+        foreach (var s in errors)
+        {
+            if (!actual.Description.Contains(s))
+                reportPartsNotFound = true;
+        }
+
         //Assert
-        Assert.AreEqual("0", actual);
+        Assert.IsFalse(reportPartsNotFound);
     }
 
     [Test]
