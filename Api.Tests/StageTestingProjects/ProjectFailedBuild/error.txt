@@ -1,18 +1,22 @@
-Microsoft (R) Build Engine version 17.0.0+c9eb9dd64 for .NET
-Copyright (C) Microsoft Corporation. All rights reserved.
+Microsoft (R) Build Engine версии 17.0.0+c9eb9dd64 для .NET
+(C) Корпорация Майкрософт (Microsoft Corporation). Все права защищены.
 
-  Determining projects to restore...
-  All projects are up-to-date for restore.
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,5): error CS1003: Syntax error, ',' expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1002: ; expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1022: Type or namespace definition, or end-of-file expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
+  Определение проектов для восстановления...
+  Все проекты обновлены для восстановления.
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,18): error CS0116: Пространство имен не может напрямую включать в себя такие элементы, как методы или операторы [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,1): error CS0118: "builder" является переменная, но используется как тип. [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(2,1): error CS0246: Не удалось найти тип или имя пространства имен "MISTAKE" (возможно, отсутствует директива using или ссылка на сборку). [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,1): error CS0538: "builder.Services" в явном объявлении интерфейса не является интерфейсом. [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,18): error CS0501: "<invalid-global-code>.AddMvc()" должен объявлять тело, так как он не помечен модификатором abstract, extern или partial. [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
 
-Build FAILED.
+Ошибка сборки.
 
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,5): error CS1003: Syntax error, ',' expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1002: ; expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\Program.cs(10,25): error CS1022: Type or namespace definition, or end-of-file expected [C:\back\Api.Tests\StageTestingProjects\ProjectFailedBuild\ApiTestingProject\ApiTestingProject.csproj]
-    0 Warning(s)
-    3 Error(s)
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,18): error CS0116: Пространство имен не может напрямую включать в себя такие элементы, как методы или операторы [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,1): error CS0118: "builder" является переменная, но используется как тип. [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(2,1): error CS0246: Не удалось найти тип или имя пространства имен "MISTAKE" (возможно, отсутствует директива using или ссылка на сборку). [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,1): error CS0538: "builder.Services" в явном объявлении интерфейса не является интерфейсом. [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\Program.cs(3,18): error CS0501: "<invalid-global-code>.AddMvc()" должен объявлять тело, так как он не помечен модификатором abstract, extern или partial. [C:\back\atlant-tester\Api.Tests\StageTestingProjects\ProjectFailedBuild\TestTAP\TestTAP\TestTAP.csproj]
+    Предупреждений: 0
+    Ошибок: 5
 
-Time Elapsed 00:00:01.17
+Прошло времени 00:00:04.14

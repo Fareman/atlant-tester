@@ -1,0 +1,9 @@
+version: '3.4'
+
+services:
+  testtap:
+    image: ${DOCKER_REGISTRY-}testtap
+    container_name: testtap
+    build:
+      context: .
+      dockerfile: TestTAP/Dockerfile

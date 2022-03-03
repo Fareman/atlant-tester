@@ -1,2 +1,1 @@
-yaml.scanner.ScannerError: mapping values are not allowed here
-  in "C:\back\atlant-tester\Api.Tests\StageTestingProjects\ContainerFailedBuild\docker-compose.yml", line 8, column 17
+В директории C:\back\atlant-tester\Api.Tests\StageTestingProjects\ContainerFailedBuild нет файла docker-compose.yml.

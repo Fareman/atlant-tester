@@ -32,7 +32,7 @@ public class TesterService
             var slnPath = FindSln(tempFolder);
             if (!File.Exists(slnPath))
                 throw new DirectoryNotFoundException(
-                    $"В директории {tempFolder} решение отсутствует или имеет неверное имя. Должно быть TestTAP.sln");
+                    $"В директории {tempFolder} отсутствует решение TestTAP.sln.");
             var workingDirectory = Path.GetDirectoryName(slnPath);
 
             var dotnetCommand = await Cli.Wrap("dotnet")
@@ -60,7 +60,7 @@ public class TesterService
             const string xmlName = "REPORT.xml";
             var slnPath = FindSln(tempFolder);
             if (!File.Exists(slnPath))
-                throw new DirectoryNotFoundException($"В директории {tempFolder} нет решения.");
+                throw new DirectoryNotFoundException($"В директории {tempFolder} отсутствует решение TestTAP.sln.");
             var codeStyle = Path.Combine(Directory.GetCurrentDirectory(), "codestyle.DotSettings");
             var stdOutBuffer = new StringBuilder();
 
@@ -124,7 +124,7 @@ public class TesterService
 
             if (dockerCommand.ExitCode == 0)
             {
-                const string postmanReportDirectory = "postman\newman-report.xml";
+                const string postmanReportDirectory = @"TestTAP\postman\newman-report.xml";
                 var projectRootPath = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..\\..\\..\\..\\"));
                 var reportPath = Path.Combine(tempFolder, postmanReportDirectory);
                 var xmlDocument = XDocument.Load($"{reportPath}");
@@ -141,10 +141,11 @@ public class TesterService
         finally
         {
             await Cli.Wrap("docker-compose")
-                .WithArguments("rm athlant_postgres_container athlant_postman_container testtap -f")
+                .WithArguments("rmi")
+                .WithWorkingDirectory(tempFolder)
                 .WithValidation(CommandResultValidation.None)
                 .ExecuteAsync();
-            Directory.Delete(tempFolder, true);
+            //Directory.Delete(tempFolder, true);
         }
     }
 

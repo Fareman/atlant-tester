@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  testtap:
+    image: ${DOCKER_REGISTRY-}testtap
+    container_name: testtap
+    build:
+      context: .
+      dockerfile: TestTAP/Dockerfile
+
+  postman_checks:
+    image: postman/newman
+    container_name: atlant_postman_container
+    depends_on:
+     - testtap
+    command:
+        run collection.json
+        --environment="environment.json"
+        --reporters="junit,cli" --reporter-junit-export="newman-report.xml" -x
+    volumes:
+        - ./postman:/etc/newman

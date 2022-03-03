@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuites name="New Collection Copy" tests="1" time="0.064">
-  <testsuite name="New Request" id="912fc033-acd8-4139-848b-900b26e8d907" timestamp="2022-03-02T08:57:29.830Z" tests="1" failures="0" errors="0" time="0.064">
-    <testcase name="Status code is 200" time="0.064" classname="NewCollectionCopy"/>
-  </testsuite>
-</testsuites>
