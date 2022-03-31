@@ -10,12 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-	  <Content Include="../docker-compose.yml">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="codestyle.DotSettings">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </Content>
+      <Content Include="../docker-compose.yml">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Content Include="codestyle.DotSettings">
+          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
     <PackageReference Include="Serilog.AspNetCore" Version="5.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
   </ItemGroup>
-	
+    
   <ItemGroup>
     <ProjectReference Include="..\Tester\Tester.csproj" />
   </ItemGroup>

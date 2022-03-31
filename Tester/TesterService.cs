@@ -29,7 +29,10 @@ public class TesterService
         {
             var slnPath = FindSln(tempFolder);
             if (slnPath == default)
-                return new BuildStage { Result = StatusCode.Exception, Description = $"В директории {tempFolder} отсутствует решение TestTAP.sln." };
+                return new BuildStage
+                {
+                    Result = StatusCode.Exception, Description = $"В директории {tempFolder} отсутствует решение TestTAP.sln."
+                };
             var workingDirectory = Path.GetDirectoryName(slnPath);
 
             var stdOutBuffer = new StringBuilder();
@@ -59,7 +62,10 @@ public class TesterService
             const string xmlName = "REPORT.xml";
             var slnPath = FindSln(tempFolder);
             if (slnPath == default)
-                return new ResharperStage { Result = StatusCode.Exception, Description = $"В директории {tempFolder} отсутствует решение TestTAP.sln." };
+                return new ResharperStage
+                {
+                    Result = StatusCode.Exception, Description = $"В директории {tempFolder} отсутствует решение TestTAP.sln."
+                };
             var codeStyle = Path.Combine(Directory.GetCurrentDirectory(), "codestyle.DotSettings");
             var stdOutBuffer = new StringBuilder();
 
